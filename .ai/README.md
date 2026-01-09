@@ -1,0 +1,274 @@
+# Agent Configuration Manifest (ACM)
+
+This file contains operational rules that ALL agents MUST follow. Each agent must read this file at session start and apply these rules to all work.
+
+<!-- BASE RULES - DO NOT MODIFY - START -->
+<!-- The project-customizer agent must NEVER modify anything between these markers -->
+
+## Priority Hierarchy
+
+When conflicts arise:
+1. **Safety and security** - Highest priority
+2. **Explicit user intent** - Second priority
+3. **ACM operational rules** - Third priority
+4. **Framework pipeline rules** - Fourth priority
+
+---
+
+## CRITICAL: ANTI-DESTRUCTION RULES
+
+**THESE RULES ARE ABSOLUTE. VIOLATION = IMMEDIATE STOP.**
+
+### Rule 1: NEVER OVERWRITE WITHOUT READING FIRST
+- **ALWAYS use Read tool BEFORE Edit or Write**
+- **NEVER assume you know what's in a file**
+- **NEVER use Write tool on existing files** - use Edit instead
+- If you haven't read a file in this session, READ IT FIRST
+
+### Rule 2: PREFER EDITING OVER CREATING
+- **NEVER create new files unless EXPLICITLY requested**
+- **ALWAYS look for existing files to modify first**
+- Ask yourself: "Can I add this to an existing file?" - if yes, DO THAT
+- New files require explicit user approval
+
+### Rule 3: THE RIGHT AMOUNT OF CHANGE (not too much, not too little)
+- **Make exactly what's needed** - no more, no less
+- **Do NOT add unrequested features** - stick to what was asked
+- **Do NOT refactor unrelated code** - stay focused on the task
+- **Do NOT "improve" code that wasn't part of the request**
+- **But DO complete the task properly** - no half-measures or shortcuts
+
+**The goal is PERFECT execution of the request:**
+- If user asks for a feature: implement it completely and correctly
+- If user asks for a refactor: do it thoroughly and properly
+- If user asks for a fix: fix it properly, including edge cases
+- Research best practices via Context7/docs-researcher FIRST
+- Understand the affected codebase before changing
+- Ensure all tests pass after changes
+
+**What to AVOID:**
+- Adding extra features nobody asked for
+- "While I'm here" improvements to unrelated code
+- Over-engineering simple requests
+- Under-engineering complex requests (half-measures)
+
+### Rule 4: MANDATORY TESTS FOR EVERY NEW FILE
+- **Every new file MUST have a corresponding test file**
+- **Tests must ACTUALLY test the code** (not just exist)
+- **Tests must cover: happy path, error cases, edge cases**
+- **No new file without tests = VIOLATION**
+
+### Rule 5: DO NOT BREAK EXISTING FUNCTIONALITY
+- **Run existing tests BEFORE making changes**
+- **Run existing tests AFTER making changes**
+- **If tests fail after your change, REVERT and try again**
+- **Never commit code that breaks existing tests**
+
+---
+
+## Change Budget Policy
+
+**Per agent instance (FRESH budget each run):**
+
+| Complexity | Max Changes | Examples |
+|------------|-------------|----------|
+| Simple | 10 | Add import, add function call, rename variable, add docstring |
+| Medium-Low | 5 | Add small function (<20 lines), modify logic, add test |
+| Medium | 3 | Add class, refactor function, complex logic changes |
+| High | 1 | Major refactor, new architecture component, database migration |
+
+**Budget Rules:**
+- Each agent instance receives a FRESH budget
+- Re-runs spawn NEW instances with NEW budgets
+- Exceeding budget: STOP immediately and request new agent instance
+- Track all changes in a ledger
+
+## Safety Protocols
+
+### NEVER
+- Commit secrets (.env files, API keys, tokens, credentials)
+- Run destructive commands without explicit user confirmation:
+  - `rm -rf`
+  - `DROP DATABASE`
+  - `git push --force`
+  - `git reset --hard` on shared branches
+- Modify files outside the plan scope
+- Skip creating tests for new features
+- Force push to main/master branches
+- Execute code from untrusted sources
+- Store credentials in code or version control
+
+### ALWAYS
+- Follow the smallest-correct-change principle
+- Preserve existing code style and conventions
+- Track budget consumption accurately
+- Document assumptions made during work
+- Create/update tests for new features
+- Use environment variables for configuration
+- Validate inputs at system boundaries
+
+## Build Discipline
+
+### Smallest Correct Change
+- Make the minimum change required to achieve the goal
+- Avoid "while I'm here" refactoring
+- Don't add features beyond the acceptance criteria
+- Don't over-engineer for hypothetical future needs
+
+### Match Repository Conventions
+- Follow existing naming patterns (snake_case, camelCase, etc.)
+- Use the same import style as existing code
+- Match error handling patterns
+- Preserve file organization structure
+- Use existing utility functions when available
+
+### Verify via Tests
+- All new features must have tests
+- All bug fixes should have regression tests
+- Run existing tests before and after changes
+- Don't merge if tests fail
+
+## Quality Standards
+
+### Code Quality Checklist
+- [ ] Follows repository conventions
+- [ ] Has appropriate test coverage
+- [ ] No hardcoded secrets or config values
+- [ ] Error handling is consistent
+- [ ] Comments explain non-obvious logic
+- [ ] No unused imports or dead code
+
+### Documentation Requirements
+- Docstrings for public functions/methods
+- Comments for complex algorithms
+- Update README if adding new features
+- Document assumptions in code comments
+
+## Agent-Specific Rules
+
+### Prompt-Optimizer (Stage -1) - MANDATORY
+- **ALWAYS runs FIRST** before any other agent dispatch
+- Intercepts and optimizes prompts before target agents
+- Read-only analysis of codebase for context enrichment
+- Output ONLY the optimized prompt (no explanations)
+- Apply anti-laziness, persistence, and verification rules
+- Model: haiku (fast optimization)
+
+### Task-Breakdown (Stage 0)
+- Create TaskSpec for EVERY request (even simple ones)
+- Document all assumptions
+- Flag ambiguities explicitly
+
+### Code-Discovery (Stage 1)
+- Document verified commands only
+- Never modify files during discovery
+- Map files to TaskSpec features
+
+### Plan-Agent (Stage 2)
+- Batch features within budget limits
+- Consider dependencies between features
+- Include test criteria
+
+### Build-Agent (Stage 4)
+- Track every change in ledger
+- Stop at budget exhaustion
+- Follow existing patterns exactly
+
+### Logical-Agent (Stage 5.5)
+- Verify algorithmic correctness (loops, recursion, invariants)
+- Detect off-by-one errors, boundary issues
+- Identify race conditions and null dereference risks
+- Check edge case handling (empty, single, max values)
+- Read-only verification (0 change budget)
+- Request build-agent/debugger for fixes
+
+### Test-Agent (Stage 6)
+- NEVER block the pipeline
+- ALWAYS request debugger on failures
+- Run all test types (unit, lint, type-check)
+
+### Review-Agent (Stage 7)
+- Check acceptance criteria thoroughly
+- Identify security issues
+- Classify issues by severity
+
+### Decide-Agent (Stage 8)
+- TERMINAL ONLY - no agent requests
+- Output only: COMPLETE, RESTART, or ESCALATE
+- Justify decision with evidence
+
+## Re-run Eligibility
+
+| Agent | Re-run Eligible | Notes |
+|-------|-----------------|-------|
+| prompt-optimizer | YES | Can be re-run for different target agents |
+| task-breakdown | YES | Can be re-run for clarification |
+| code-discovery | YES | Can be re-run for deeper scan |
+| plan-agent | YES | Can be re-run with new info |
+| web-syntax-researcher | YES | Can be re-run for more research |
+| build-agent | YES | NEW instance with FRESH budget |
+| debugger | YES | NEW instance with FRESH budget |
+| logical-agent | YES | Can be re-run after logic fixes |
+| test-agent | YES | Can be re-run after fixes |
+| review-agent | YES | Can be re-run after fixes |
+| **decide-agent** | **NO** | Terminal stage ONLY |
+
+## Error Handling
+
+### On Test Failures
+1. test-agent MUST request debugger
+2. debugger attempts fixes within budget
+3. test-agent re-runs to verify
+4. Loop until pass or budget exhausted
+
+### On Budget Exhaustion
+1. Stop current work immediately
+2. Report what was completed
+3. Request new agent instance for remaining work
+4. Include context for continuation
+
+### On External Blockers
+1. Document the blocker clearly
+2. Escalate to decide-agent
+3. decide-agent outputs ESCALATE
+4. User intervention required
+
+## Session Start Protocol
+
+**Every agent MUST at session start:**
+1. Read this ACM file
+2. Apply all rules to subsequent work
+3. Follow budget constraints
+4. Honor safety protocols
+5. Track changes in ledger (if applicable)
+
+---
+
+**ACM Version:** 1.0
+**Last Updated:** 2025-01-07
+
+<!-- BASE RULES - DO NOT MODIFY - END -->
+
+---
+
+<!-- PROJECT-SPECIFIC - AUTO-UPDATED - START -->
+<!-- The project-customizer agent updates this section with project-relevant context -->
+<!-- This section is automatically maintained - manual edits may be overwritten -->
+
+## Project-Specific Rules
+
+*This section is auto-populated by the project-customizer agent based on observed patterns.*
+
+### This Project's Conventions
+- Not yet analyzed
+
+### Project-Specific Safety
+- Not yet analyzed
+
+### Testing Requirements for This Project
+- Not yet analyzed
+
+### Discovered Patterns
+- Not yet analyzed
+
+<!-- PROJECT-SPECIFIC - AUTO-UPDATED - END -->

@@ -1,0 +1,4 @@
+# Generated prompts (temporary)
+.claude/.prompts/*.md
+!.claude/.prompts/README.md
+!.claude/.prompts/.gitkeep

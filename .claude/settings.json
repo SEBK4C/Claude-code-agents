@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "Task",
+      "Skill(*)",
+      "NotebookEdit",
+      "LSP"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"decision\": \"approve\", \"reason\": \"REMINDER: You MUST have Read this file first in this session. If not, STOP and Read it now.\"}'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q '\"file_path\"'; then FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | sed -n 's/.*\"file_path\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p'); if [ -f \"$FILE\" ]; then echo '{\"decision\": \"block\", \"reason\": \"BLOCKED: File exists. Use Edit tool instead of Write. Write overwrites everything.\"}'; exit 0; fi; fi; echo '{\"decision\": \"approve\", \"reason\": \"New file. Remember: create corresponding test file with real assertions.\"}'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[RULES] 1) Read before Edit 2) Edit not Write on existing files 3) No unnecessary new files 4) Real tests required 5) Right amount of change 6) Research docs first'"
+          }
+        ]
+      }
+    ]
+  }
+}
