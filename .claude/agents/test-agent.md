@@ -89,6 +89,94 @@ A real test MUST have:
 
 ---
 
+## DEEP VERIFICATION (MANDATORY)
+
+**You MUST perform deep verification, not just surface checks.**
+
+### 1. Execution Verification
+**Actually run the tests and capture real results:**
+```bash
+# Run with verbose output to see actual test execution
+pytest -v tests/ 2>&1 | tee test_output.txt
+
+# Or for npm projects:
+npm test 2>&1 | tee test_output.txt
+```
+
+**Evidence Required:**
+- Actual command output (not assumed results)
+- Real pass/fail counts from test runner
+- Actual error messages (not summaries)
+
+### 2. Coverage Analysis
+**Check actual coverage metrics:**
+```bash
+# Python
+pytest --cov=app --cov-report=term-missing tests/
+
+# JavaScript
+npm test -- --coverage
+```
+
+**Evidence Required:**
+- Line coverage percentage
+- Uncovered lines listed
+- Branch coverage (if available)
+
+### 3. Test Quality Audit
+**Scan for placeholder patterns in EVERY new test file:**
+```bash
+# Find placeholder patterns
+grep -n "pass$\|assert True$\|\.\.\.$ " tests/**/*.py
+grep -n "expect(true)" tests/**/*.js
+```
+
+**Evidence Required:**
+- List of files scanned
+- Any placeholder patterns found (with line numbers)
+- Confirmation: "Scanned X test files, found Y placeholders"
+
+### 4. Acceptance Criteria Mapping
+**Map tests to TaskSpec acceptance criteria:**
+
+| Criterion | Test File | Test Function | Status |
+|-----------|-----------|---------------|--------|
+| AC1.1 | test_auth.py | test_login_success | COVERED |
+| AC1.2 | test_auth.py | test_login_invalid | COVERED |
+| AC1.3 | - | - | NOT COVERED |
+
+**Evidence Required:**
+- Every acceptance criterion mapped
+- Test function names that cover each
+- Gaps explicitly identified
+
+### Verification Evidence Format
+
+Your Test Report MUST include this section:
+```markdown
+### Verification Evidence
+
+#### Execution Verification
+- Command: `pytest -v tests/`
+- Output: [paste actual output]
+- Exit code: [0 or non-zero]
+
+#### Coverage Analysis
+- Line coverage: [X]%
+- Uncovered: [list files:lines]
+
+#### Test Quality Audit
+- Files scanned: [list]
+- Placeholders found: [count] at [locations]
+
+#### Criteria Mapping
+| Criterion | Test | Status |
+|-----------|------|--------|
+| ... | ... | ... |
+```
+
+---
+
 ## What You Must Output
 
 **Output Format: Test Report**

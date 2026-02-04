@@ -1,0 +1,1 @@
+{"timestamp": "20260203_225141", "event": "PostToolUse", "tool": "Glob", "session": "502bbdb5-0275-44b4-acf0-b9d8f0e610e7", "output_preview": "{\n  \"filenames\": [],\n  \"durationMs\": 432,\n  \"numFiles\": 0,\n  \"truncated\": false\n}"}

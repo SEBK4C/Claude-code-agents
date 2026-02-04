@@ -1,0 +1,3 @@
+{"timestamp": "20260129_002948", "event": "PostToolUse", "tool": "Glob", "session": "b8a76b01-d61b-4be5-9b23-aeab67a5941c", "output_preview": "{\n  \"filenames\": [],\n  \"durationMs\": 1208,\n  \"numFiles\": 0,\n  \"truncated\": false\n}"}
+{"timestamp": "20260129_002948", "event": "PostToolUse", "tool": "unknown", "session": "1769639388", "output_preview": ""}
+{"timestamp": "20260129_002948", "event": "PostToolUse", "tool": "Glob", "session": "b8a76b01-d61b-4be5-9b23-aeab67a5941c", "output_preview": "{\n  \"filenames\": [],\n  \"durationMs\": 1201,\n  \"numFiles\": 0,\n  \"truncated\": false\n}"}

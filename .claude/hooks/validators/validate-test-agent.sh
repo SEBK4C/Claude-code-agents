@@ -49,6 +49,19 @@ if ! echo "$OUTPUT" | grep -qi "Next\|Recommendation\|Status" 2>/dev/null; then
     WARNINGS+=("Missing section: Next steps/Recommendation (recommended)")
 fi
 
+# Check for Deep Verification Evidence (recommended)
+if ! echo "$OUTPUT" | grep -qi "Verification Evidence\|Execution Verification\|Evidence:" 2>/dev/null; then
+    WARNINGS+=("Missing section: Verification Evidence (deep verification required)")
+fi
+
+if ! echo "$OUTPUT" | grep -qi "Criteria Mapping\|Criterion.*Test\|Coverage Analysis" 2>/dev/null; then
+    WARNINGS+=("Missing section: Acceptance criteria mapping or coverage analysis (recommended)")
+fi
+
+if ! echo "$OUTPUT" | grep -qi "Quality Audit\|Placeholders\|scanned" 2>/dev/null; then
+    WARNINGS+=("Missing section: Test quality audit (recommended)")
+fi
+
 # Output result as JSON
 if [ ${#ERRORS[@]} -eq 0 ]; then
     WARN_JSON="[]"

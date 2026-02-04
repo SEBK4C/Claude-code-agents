@@ -141,6 +141,14 @@ When conflicts arise:
 - Document all assumptions
 - Flag ambiguities explicitly
 
+### Context-Validator (Stage 0.5)
+- Validate PipelineContext integrity after each stage
+- Verify all required context for target stage is present
+- Check context completeness and quality
+- Request source agents for missing context
+- Read-only verification
+- Model: haiku (fast validation)
+
 ### Code-Discovery (Stage 1)
 - Document verified commands only
 - Never modify files during discovery
@@ -151,9 +159,18 @@ When conflicts arise:
 - Consider dependencies between features
 - Include test criteria
 
-### Build-Agent (Stage 4)
+### Pre-Flight-Checker (Stage 3.5)
+- Pre-implementation sanity checks
+- Verify environment, dependencies, file system
+- Check plan consistency before build starts
+- Report blockers with fix instructions
+- Request plan-agent for conflict resolution
+- Model: haiku (fast checks)
+
+### Build-Agent (Stage 4) - 55 agents
 - Track every change in ledger
 - Follow existing patterns exactly
+- Chain: build-agent-1 through build-agent-55, cycles back to 1
 
 ### Logical-Agent (Stage 5.5)
 - Verify algorithmic correctness (loops, recursion, invariants)
@@ -168,6 +185,14 @@ When conflicts arise:
 - ALWAYS request debugger on failures
 - Run all test types (unit, lint, type-check)
 
+### Integration-Agent (Stage 6.5)
+- Integration testing specialist
+- Verify components work together correctly
+- Run integration tests, check API contracts
+- Validate end-to-end workflows
+- NEVER block pipeline - request debugger on failures
+- Model: opus (deep analysis)
+
 ### Review-Agent (Stage 7)
 - Check acceptance criteria thoroughly
 - Identify security issues
@@ -175,7 +200,7 @@ When conflicts arise:
 
 ### Decide-Agent (Stage 8)
 - TERMINAL ONLY - no agent requests
-- Output only: COMPLETE, RESTART, or ESCALATE
+- Output only: COMPLETE or RESTART
 - Justify decision with evidence
 
 ## PITER Framework
@@ -184,9 +209,9 @@ This pipeline implements the **PITER methodology** for autonomous software engin
 
 | Phase | Description | Stage(s) | Agent(s) |
 |-------|-------------|----------|----------|
-| **P**lan | Analyze request, discover codebase, create implementation plan | 0, 1, 2 | task-breakdown, code-discovery, plan-agent |
-| **I**mplement | Research docs, write code per the plan | 3, 4 | docs-researcher, build-agent-1/2/3/4/5 |
-| **T**est | Run test suite, report results, never block pipeline | 6 | test-agent |
+| **P**lan | Analyze request, validate context, discover codebase, create implementation plan | 0, 0.5, 1, 2 | task-breakdown, context-validator, code-discovery, plan-agent |
+| **I**mplement | Research docs, pre-flight checks, write code per the plan | 3, 3.5, 4 | docs-researcher, pre-flight-checker, build-agent-1/2/3/4/5 |
+| **T**est | Run unit tests, integration tests, never block pipeline | 6, 6.5 | test-agent, integration-agent |
 | **E**valuate | Review against acceptance criteria, check anti-destruction | 7 | review-agent |
 | **R**efine | Fix errors, verify logic, cycle back as needed | 5, 5.5 | debugger, logical-agent |
 
@@ -208,13 +233,16 @@ The ultimate goal is **autonomous shipping**: the codebase ships itself through 
 |-------|-----------------|-------|
 | prompt-optimizer | YES | Can be re-run for different target agents |
 | task-breakdown | YES | Can be re-run for clarification |
+| context-validator | YES | Can be re-run after missing context provided |
 | code-discovery | YES | Can be re-run for deeper scan |
 | plan-agent | YES | Can be re-run with new info |
-| web-syntax-researcher | YES | Can be re-run for more research |
-| build-agent | YES | Can be re-run to continue work |
-| debugger | YES | Can be re-run for additional fixes |
+| docs-researcher | YES | Can be re-run for more research |
+| pre-flight-checker | YES | Can be re-run after blockers resolved |
+| build-agent-1 through 55 | YES | Can be re-run to continue work |
+| debugger through debugger-11 | YES | Can be re-run for additional fixes |
 | logical-agent | YES | Can be re-run after logic fixes |
 | test-agent | YES | Can be re-run after fixes |
+| integration-agent | YES | Can be re-run after integration fixes |
 | review-agent | YES | Can be re-run after fixes |
 | **decide-agent** | **NO** | Terminal stage ONLY |
 
@@ -228,13 +256,13 @@ The ultimate goal is **autonomous shipping**: the codebase ships itself through 
 
 ### On Large Tasks
 1. Report what was completed
-2. Request continuation with context for remaining work
-3. Include context for continuation
+2. Continue work until the task is fully complete
+3. Pass context between continuation agents as needed
 
 ### On External Blockers
 1. Document the blocker clearly
 2. Escalate to decide-agent
-3. decide-agent outputs ESCALATE
+3. decide-agent outputs RESTART with blockers documented
 4. User intervention required
 
 ## Session Start Protocol

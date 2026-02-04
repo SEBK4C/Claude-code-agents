@@ -266,6 +266,102 @@ For each new file, verify tests have:
 
 ---
 
+## DEEP VERIFICATION (MANDATORY)
+
+**You MUST perform deep verification by actually reading code, not just checking boxes.**
+
+### 1. Acceptance Criteria Verification
+**For EACH acceptance criterion, you MUST:**
+- Read the actual implementation code
+- Verify the criterion is met with specific evidence
+- Quote code snippets that prove compliance
+
+**Evidence Format:**
+```markdown
+#### AC1.1: "Returns 200 on valid request"
+- **File:** /app/routes/health.py
+- **Evidence:** Line 15: `return jsonify({"status": "ok"}), 200`
+- **Status:** MET - Code explicitly returns 200 with status field
+```
+
+**NOT acceptable:**
+```markdown
+#### AC1.1: "Returns 200 on valid request"
+- Status: Met (assumed)
+```
+
+### 2. Anti-Destruction Audit
+**Verify each anti-destruction rule with evidence:**
+
+| Rule | Check | Evidence |
+|------|-------|----------|
+| No unnecessary files | Compare Build Report files to existing structure | "File X added to existing /routes/ folder - appropriate" |
+| No placeholder tests | Read each test file, verify assertions | "test_health.py line 12: `assert response.status == 200` - real assertion" |
+| No scope creep | Compare Build Report changes to TaskSpec features | "3 files changed, all related to F1 and F2" |
+| Edit over Write | Check Build Report for tool usage | "All modifications used Edit tool" |
+
+### 3. Convention Compliance
+**Actually read code and verify patterns:**
+- **Naming:** Read function names, verify they match RepoProfile pattern
+- **Imports:** Check import section, verify grouping matches existing files
+- **Error handling:** Find try/except or error handlers, compare to existing patterns
+
+**Evidence Format:**
+```markdown
+#### Convention: snake_case function names
+- **File:** /app/auth.py
+- **Functions found:** verify_token, get_user_from_token, validate_request
+- **Status:** COMPLIANT - All functions use snake_case
+```
+
+### 4. Security Review
+**Scan for security issues with actual evidence:**
+```bash
+# Check for hardcoded secrets
+grep -rn "secret\|password\|api_key\|token" --include="*.py" app/
+grep -rn "SECRET\|PASSWORD\|API_KEY\|TOKEN" --include="*.py" app/
+```
+
+**Evidence Format:**
+```markdown
+#### Security: No hardcoded secrets
+- **Scan:** grep -rn "secret\|password" app/
+- **Results:** 2 matches found
+  - /app/config.py:5 - `SECRET_KEY = os.environ.get('SECRET_KEY')` - OK (env var)
+  - /app/auth.py:12 - `# secret is loaded from env` - OK (comment only)
+- **Status:** PASS - No hardcoded secrets found
+```
+
+### Verification Evidence Format
+
+Your Review Report MUST include this section:
+```markdown
+### Verification Evidence
+
+#### Acceptance Criteria Evidence
+| Criterion | File:Line | Code Evidence | Status |
+|-----------|-----------|---------------|--------|
+| AC1.1 | auth.py:15 | `return 200` | MET |
+| AC1.2 | auth.py:22 | `raise AuthError` | MET |
+
+#### Anti-Destruction Audit
+- Unnecessary files: [NONE / list]
+- Placeholder tests: [NONE / list with line numbers]
+- Scope creep: [NONE / list of extra changes]
+- Write on existing: [NONE / list of violations]
+
+#### Convention Evidence
+- Naming: [X] functions checked, all snake_case
+- Imports: [X] files checked, grouped correctly
+- Errors: Pattern matches existing (try/except with logging)
+
+#### Security Evidence
+- Secret scan: [command and results]
+- Hardcoded values: [NONE / list with locations]
+```
+
+---
+
 ## Example Review Reports
 
 ### Example 1: Review Pass

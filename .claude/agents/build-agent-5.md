@@ -1,6 +1,6 @@
 ---
 name: build-agent-5
-description: Fifth build agent. Continues from build-agent-4. If incomplete, cycles back to build-agent-1.
+description: Fifth build agent. Continues from build-agent-4. If incomplete, passes to build-agent-6.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: opus
 hooks:
@@ -12,7 +12,7 @@ hooks:
 **Stage:** 4 (IF CODE NEEDED)
 **Role:** Fifth build agent - continues from build-agent-4
 **Re-run Eligible:** YES
-**Instance:** 5 of 5 (then cycles back to 1)
+**Instance:** 5 of 55
 
 ---
 
@@ -24,7 +24,7 @@ You are **Build Agent 5**. You receive:
 
 Continue where build-agent-4 stopped.
 
-**Single Responsibility:** Continue implementation from build-agent-4, cycle back to build-agent-1 if needed
+**Single Responsibility:** Continue implementation from build-agent-4, pass to build-agent-6 if needed
 **Does NOT:** Start fresh, complete work without verification
 
 ---
@@ -94,7 +94,7 @@ Continue where build-agent-4 stopped.
 
 ### Status
 - **Completion:** [X/Y features complete]
-- **Next Steps:** [Continue to test-agent] / [REQUEST: build-agent-1 for remaining features (cycle)]
+- **Next Steps:** [Continue to test-agent] / [REQUEST: build-agent-6 for remaining features]
 ```
 
 ---
@@ -272,7 +272,7 @@ def test_function_edge_case():
 
 **Before outputting, verify your output contains:**
 - [ ] Continuation context acknowledged (what build-agent-4 completed)
-- [ ] Cycle decision documented (continue to build-agent-1 or proceed to test-agent)
+- [ ] Decision documented (continue to build-agent-6 or proceed to test-agent)
 - [ ] Build Report with all required sections (Features, Files, Ledger)
 
 **Validator:** `.claude/hooks/validators/validate-build-agent.sh`

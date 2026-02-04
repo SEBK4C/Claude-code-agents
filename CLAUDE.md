@@ -29,13 +29,16 @@ Your allowed tools:
 |-------|-------|------|
 | -1 | prompt-optimizer | ALWAYS FIRST - optimizes prompt before dispatching to any agent |
 | 0 | task-breakdown | ALWAYS (after prompt-optimizer) |
+| 0.5 | context-validator | ALWAYS - validates PipelineContext integrity |
 | 1 | code-discovery | ALWAYS |
 | 2 | plan-agent | ALWAYS |
 | 3 | docs-researcher | Before any code (uses Context7 MCP) |
+| 3.5 | pre-flight-checker | ALWAYS - pre-implementation sanity checks |
 | 4 | build-agent-N | If code needed |
 | 5 | debugger | If errors |
 | 5.5 | logical-agent | After build, verifies logic correctness |
 | 6 | test-agent | ALWAYS |
+| 6.5 | integration-agent | ALWAYS - integration testing specialist |
 | 7 | review-agent | ALWAYS |
 | 8 | decide-agent | ALWAYS LAST |
 
@@ -47,13 +50,16 @@ Your allowed tools:
 
 This applies to ALL pipeline stages:
 - Stage 0: task-breakdown
+- Stage 0.5: context-validator
 - Stage 1: code-discovery
 - Stage 2: plan-agent
 - Stage 3: docs-researcher
+- Stage 3.5: pre-flight-checker
 - Stage 4: build-agent-1/2/3/4/5
 - Stage 5: debugger
 - Stage 5.5: logical-agent
 - Stage 6: test-agent
+- Stage 6.5: integration-agent
 - Stage 7: review-agent
 - Stage 8: decide-agent
 
@@ -157,31 +163,41 @@ Task tool:
 **Available agents (defined in .claude/agents/):**
 - `prompt-optimizer` - Stage -1 (ALWAYS FIRST - optimizes prompts before any agent dispatch)
 - `task-breakdown` - Stage 0 (after prompt-optimizer)
+- `context-validator` - Stage 0.5 (validates PipelineContext integrity)
 - `code-discovery` - Stage 1
 - `plan-agent` - Stage 2
 - `docs-researcher` - Stage 3
-- `build-agent-1` - Stage 4 (FIRST - starts implementation)
-- `build-agent-2` - Stage 4 (continues from 1)
-- `build-agent-3` - Stage 4 (continues from 2)
-- `build-agent-4` - Stage 4 (continues from 3)
-- `build-agent-5` - Stage 4 (continues from 4, cycles to 1)
-- `debugger` - Stage 5
+- `pre-flight-checker` - Stage 3.5 (pre-implementation sanity checks)
+- `build-agent-1` through `build-agent-55` - Stage 4 (implementation agents, chain sequentially)
+- `debugger` through `debugger-11` - Stage 5 (debugging agents, chain sequentially)
 - `logical-agent` - Stage 5.5 (verifies code logic correctness)
 - `test-agent` - Stage 6
+- `integration-agent` - Stage 6.5 (integration testing specialist)
 - `review-agent` - Stage 7
 - `decide-agent` - Stage 8
 
 **Build Agent Chaining (Stage 4) - CYCLES:**
 ```
-build-agent-1 → build-agent-2 → build-agent-3 → build-agent-4 → build-agent-5
-     ↑                                                               |
-     └───────────────────── cycles back ─────────────────────────────┘
+build-agent-1 → build-agent-2 → ... → build-agent-55
+     ↑                                       |
+     └────────── cycles back ────────────────┘
 ```
 - Always start with `build-agent-1`
-- If work incomplete → dispatch next agent (1→2→3→4→5→1→...)
+- If work incomplete → dispatch next agent (1→2→...→55→1→...)
 - Pass: what's done + what remains
 - Cycle continues until work is COMPLETE
-- Max 3 cycles (15 agents) before asking user
+- Agents continue until task is finished (no artificial limits)
+
+**Debugger Agent Chaining (Stage 5) - CYCLES:**
+```
+debugger → debugger-2 → ... → debugger-11
+    ↑                              |
+    └────── cycles back ───────────┘
+```
+- Always start with `debugger`
+- If errors remain → dispatch next agent (debugger→2→...→11→debugger→...)
+- Pass: what's fixed + what remains
+- Cycle continues until all errors resolved
 
 ---
 
@@ -241,7 +257,76 @@ Dispatching [requested-agent] before continuing
 
 **build-agent needs continuation:**
 - Completed F1, F2, but F3 incomplete
-→ CONTINUE with build-agent-2: "Continue from F3. F1 and F2 are done."
+-> CONTINUE with build-agent-2: "Continue from F3. F1 and F2 are done."
+
+---
+
+## PIPELINE CONTEXT (PipelineContext)
+
+**The orchestrator maintains a PipelineContext that aggregates all stage outputs.**
+
+See full schema: `.ai/schemas/pipeline-context-schema.md`
+
+### Context Accumulation
+
+As each stage completes, its output is added to PipelineContext:
+```
+Stage 0 completes -> stage_outputs.stage_0_taskspec = TaskSpec
+Stage 1 completes -> stage_outputs.stage_1_repoprofile = RepoProfile
+Stage 2 completes -> stage_outputs.stage_2_plan = ImplementationPlan
+... and so on ...
+```
+
+### Context Passing in Prompts
+
+**Always include relevant context when dispatching agents:**
+
+| Target Stage | Required Context |
+|--------------|-----------------|
+| Stage 0 | user_request |
+| Stage 1 | user_request, TaskSpec |
+| Stage 2 | user_request, TaskSpec, RepoProfile |
+| Stage 3 | user_request, TaskSpec, Plan |
+| Stage 4 | user_request, TaskSpec, RepoProfile, Plan, Docs |
+| Stage 5 | user_request, TaskSpec, BuildReports, TestReport |
+| Stage 5.5 | user_request, TaskSpec, BuildReports |
+| Stage 6 | user_request, TaskSpec, RepoProfile, BuildReports |
+| Stage 7 | All stage outputs |
+| Stage 8 | All stage outputs |
+
+### Loop-Back Trigger Format
+
+Agents request loop-backs using the REQUEST tag in their output:
+
+```markdown
+### REQUEST
+
+REQUEST: [target-agent] - [reason]
+Context: [additional context for target agent]
+Priority: [critical|high|normal]
+```
+
+**Examples:**
+```markdown
+REQUEST: debugger - 3 test failures in auth module
+Context: Failures in test_jwt_verify, test_token_refresh
+Priority: high
+```
+
+```markdown
+REQUEST: build-agent-2 - F3 implementation incomplete
+Context: F1 and F2 complete, need to continue with F3
+Priority: normal
+```
+
+### Handling Loop-Back Triggers
+
+When an agent outputs a REQUEST:
+1. Parse the REQUEST tag into a LoopBackTrigger
+2. Add to loop_back_triggers array with status "pending"
+3. Dispatch the target agent with relevant context
+4. Update status to "dispatched"
+5. On completion, update status to "completed"
 
 ---
 
@@ -285,14 +370,18 @@ Create real tests with actual assertions.
 ## Pipeline Status
 - [x] Stage -1: prompt-optimizer
 - [x] Stage 0: task-breakdown
+- [ ] Stage 0.5: context-validator
 - [x] Stage 1: code-discovery
 - [ ] Stage 2: plan-agent (IN PROGRESS)
 - [ ] Stage 3: docs-researcher
+- [ ] Stage 3.5: pre-flight-checker
 - [ ] Stage 4: build-agent-1
 - [ ] Stage 4: build-agent-2 (if needed)
 - [ ] Stage 4: build-agent-3 (if needed)
 - [ ] Stage 5: debugger
+- [ ] Stage 5.5: logical-agent
 - [ ] Stage 6: test-agent
+- [ ] Stage 6.5: integration-agent
 - [ ] Stage 7: review-agent
 - [ ] Stage 8: decide-agent
 ```
@@ -316,22 +405,22 @@ All agents must read `.ai/README.md` at session start. It contains:
 4. **No direct tools** - Orchestrator only dispatches, never reads/edits/runs
 5. **All mandatory stages** - -1, 0, 1, 2, 6, 7, 8 run for EVERY request
 6. **docs-researcher before build** - Always research docs before writing code
-7. **Retry limit: 3** - Max 3 retries per stage, then ask user for help
+7. **Persist until complete** - Retry with improved prompts until stage succeeds
 
 ---
 
-## RETRY LIMITS
+## RETRY GUIDANCE
 
-**Per-stage retry limit: 3 attempts**
+**Persist until success - no artificial limits**
 
-If an agent fails 3 times:
-1. Summarize what went wrong each attempt
-2. Ask user: "Stage [N] failed 3 times. Issues: [list]. How should I proceed?"
-3. Wait for user guidance before continuing
+When retrying a stage:
+1. Analyze what went wrong in the previous attempt
+2. Improve the prompt with specific guidance to fix the issue
+3. Continue retrying until the stage succeeds
 
-**Retry counter tracking:**
+**Retry tracking (for visibility):**
 ```
-Stage 2 (plan-agent): Attempt 2/3
+Stage 2 (plan-agent): Attempt 2
 Issue: Plan missing test file locations
 Retrying with: "Include specific test file paths for each feature"
 ```
@@ -345,6 +434,98 @@ Retrying with: "Include specific test file paths for each feature"
 3. **NO unnecessary files** - Prefer modifying existing files
 4. **REAL tests** - Every new file needs 3+ real test functions
 5. **RIGHT amount of change** - Not too much, not too little
+
+---
+
+## LONG-RUNNING CAPABILITY
+
+**The pipeline has no artificial time limits. Work continues until complete.**
+
+### No Time Constraints
+- Agents continue working until their task is finished
+- Build agents chain indefinitely until implementation is complete
+- No timeout-based terminations
+
+### State Persistence (Conceptual)
+
+The pipeline maintains state for recovery:
+
+```
+PipelineState:
+  session_id: unique identifier
+  restart_count: number of restarts (0 = first pass)
+  current_pass: "first" | "subsequent"
+  checkpoint: last completed stage
+```
+
+See full schema: `.ai/schemas/pipeline-state-schema.md`
+
+### Checkpoint Protocol
+
+State is checkpointed after each stage:
+1. Stage completes successfully
+2. Output added to PipelineContext
+3. Checkpoint updated with stage number
+4. If interrupted, resume from last checkpoint
+
+### Recovery on Interrupt
+
+```
+1. Load last checkpoint
+2. Restore PipelineContext
+3. Resume from last completed stage
+4. Continue pipeline normally
+```
+
+---
+
+## MANDATORY RESTART LOGIC
+
+**The pipeline MUST restart at least once before outputting COMPLETE.**
+
+### Why Mandatory Restart?
+
+First-pass implementations often have subtle issues that only become apparent on review. The mandatory restart ensures:
+1. All changes go through a second verification pass
+2. Issues detected in review get properly addressed
+3. No "quick fixes" bypass the full pipeline
+
+### Restart Counter Tracking
+
+```
+restart_count = 0  --> First pass (CANNOT output COMPLETE)
+restart_count >= 1 --> Subsequent pass (CAN output COMPLETE)
+```
+
+### First Pass vs Second Pass
+
+| Pass | restart_count | decide-agent Behavior |
+|------|---------------|----------------------|
+| First | 0 | MUST output RESTART (even if all criteria met) |
+| Second+ | >= 1 | CAN output COMPLETE (if all criteria met) |
+
+### decide-agent Restart Requirement
+
+**On first pass (restart_count = 0):**
+```markdown
+Decision: RESTART
+Reason: First pass complete. Mandatory restart for verification.
+Restart Objective: Verify implementation through second pass.
+```
+
+**On subsequent pass (restart_count >= 1):**
+```markdown
+Decision: COMPLETE
+Justification: All criteria met. Second pass verification successful.
+```
+
+### Orchestrator Restart Handling
+
+When decide-agent outputs RESTART:
+1. Increment restart_count
+2. Update current_pass to "subsequent"
+3. Preserve relevant context for next pass
+4. Begin pipeline from Stage 0 with restart context
 
 ---
 
@@ -371,7 +552,7 @@ Retrying with: "Include specific test file paths for each feature"
 - RETRY with better instructions if output is poor
 - Track attempts and display status
 - No shortcuts, no exceptions
-- Max 3 retries per stage, then ask user
+- Persist until each stage succeeds
 
 <!-- BASE RULES - DO NOT MODIFY - END -->
 

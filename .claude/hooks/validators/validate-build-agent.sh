@@ -33,9 +33,10 @@ if ! echo "$OUTPUT" | grep -qi "Files Changed\|Files Created\|Files Modified\|##
     ERRORS+=("Resolve this Format error in build-agent output: Missing required section - Files Changed")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Budget Consumed\|Budget.*:\|Simple:.*[0-9]" 2>/dev/null; then
-    ERRORS+=("Resolve this Format error in build-agent output: Missing required section - Budget Consumed")
-fi
+# Budget checks removed - agents work until completion, not artificial limits
+# if ! echo "$OUTPUT" | grep -qi "Budget Consumed\|Budget.*:\|Simple:.*[0-9]" 2>/dev/null; then
+#     ERRORS+=("Resolve this Format error in build-agent output: Missing required section - Budget Consumed")
+# fi
 
 if ! echo "$OUTPUT" | grep -qi "Features Implemented\|### Features\|F[0-9]+:" 2>/dev/null; then
     WARNINGS+=("Missing section: Features Implemented (recommended)")

@@ -1,0 +1,1 @@
+{"timestamp":"2026-02-03T20:46:51Z","agent":"context-validator","valid":true,"errors":[],"warnings":[],"preview":"## Context Validation Report  ### Target Stage test-agent  ### Context Verified - TaskSpec: Present  ### Validation Status VALID  ### Next Step Proceed "}

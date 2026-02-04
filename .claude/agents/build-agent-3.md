@@ -12,7 +12,7 @@ hooks:
 **Stage:** 4 (IF CODE NEEDED)
 **Role:** CONTINUATION agent - continues from build-agent-2
 **Re-run Eligible:** YES
-**Instance:** 3 of 5
+**Instance:** 3 of 55
 
 ---
 

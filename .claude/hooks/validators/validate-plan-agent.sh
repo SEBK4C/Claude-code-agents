@@ -41,9 +41,10 @@ if ! echo "$OUTPUT" | grep -qiE "F[0-9]+|Feature" 2>/dev/null; then
     WARNINGS+=("No feature references found (expected F1, F2, etc.)")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Budget\|budget" 2>/dev/null; then
-    WARNINGS+=("Missing section: Budget allocation (recommended)")
-fi
+# Budget checks removed - agents work until completion, not artificial limits
+# if ! echo "$OUTPUT" | grep -qi "Budget\|budget" 2>/dev/null; then
+#     WARNINGS+=("Missing section: Budget allocation (recommended)")
+# fi
 
 if ! echo "$OUTPUT" | grep -qi "Dependencies\|Order\|Sequence" 2>/dev/null; then
     WARNINGS+=("Missing section: Dependencies/Order (recommended)")

@@ -45,9 +45,10 @@ if ! echo "$OUTPUT" | grep -qi "Verification\|Test\|Verified" 2>/dev/null; then
     WARNINGS+=("Missing section: Verification (recommended)")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Budget\|budget" 2>/dev/null; then
-    WARNINGS+=("Missing section: Budget tracking (recommended)")
-fi
+# Budget checks removed - agents work until completion, not artificial limits
+# if ! echo "$OUTPUT" | grep -qi "Budget\|budget" 2>/dev/null; then
+#     WARNINGS+=("Missing section: Budget tracking (recommended)")
+# fi
 
 # Output result as JSON
 if [ ${#ERRORS[@]} -eq 0 ]; then

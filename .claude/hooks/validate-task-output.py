@@ -30,15 +30,19 @@ def output_allow(context_message):
     sys.exit(0)
 
 
-def output_block(block_message):
-    """Output blocking response - validation failed, block the tool use.
+def output_warning(warning_message):
+    """Output allowing response with validation warning.
 
-    Per Claude Code docs:
-    - Exit 0 = allow
-    - Exit 2 = block (stderr shown to Claude)
+    Per framework design: validators should use "graceful degradation" and "never block".
+    Validation failures are surfaced as warnings, not blocks.
     """
-    print(f'[VALIDATION FAILED] {block_message}', file=sys.stderr)
-    sys.exit(2)
+    print(json.dumps({
+        'hookSpecificOutput': {
+            'hookEventName': 'PostToolUse',
+            'additionalContext': f'[VALIDATION WARNING] {warning_message}'
+        }
+    }))
+    sys.exit(0)
 
 
 def main():
@@ -94,11 +98,11 @@ def main():
                 else:
                     output_allow('Validation passed')
             else:
-                # Validation failed - BLOCK with exit code 2 (stderr shown to Claude)
+                # Validation failed - output as warning (non-blocking per framework design)
                 errors = v.get('errors', ['Unknown validation issue'])
                 warnings = v.get('warnings', [])
                 all_issues = errors + warnings
-                output_block('; '.join(all_issues))
+                output_warning('Missing required section; ' + '; '.join(all_issues))
         else:
             # Validator produced no output - allow by default
             output_allow('Validator produced no output')

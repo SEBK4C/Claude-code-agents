@@ -1,0 +1,1 @@
+{"timestamp": "20260203_232355", "event": "PostToolUse", "tool": "Grep", "session": "502bbdb5-0275-44b4-acf0-b9d8f0e610e7", "output_preview": "{\n  \"mode\": \"content\",\n  \"numFiles\": 0,\n  \"filenames\": [],\n  \"content\": \"\",\n  \"numLines\": 0,\n  \"appliedLimit\": 60\n}"}

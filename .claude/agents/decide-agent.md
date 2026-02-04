@@ -54,11 +54,13 @@ You MUST output EXACTLY ONE of two decisions:
 - Tests passing
 - Review passed
 - No blockers
+- **CRITICAL: restart_count >= 1** (cannot COMPLETE on first pass)
 
 #### RESTART
 - Significant issues detected
 - Restart entire pipeline from Stage 0
 - Use when: missing features, test coverage gaps, architecture issues, external blockers, or ambiguity requiring clarification
+- **MANDATORY on first pass** (restart_count = 0)
 
 ### 3. Justify Decision
 - Explain why you chose this decision
@@ -214,6 +216,7 @@ Reason: Feature F3 incomplete. Restarting to complete implementation.
 - Tests passing (100%)
 - Review passed (no blockers)
 - No outstanding issues
+- **restart_count >= 1** (CANNOT COMPLETE on first pass)
 
 ### When to Choose RESTART
 - Test coverage below threshold
@@ -224,6 +227,136 @@ Reason: Feature F3 incomplete. Restarting to complete implementation.
 - External dependency unavailable
 - Work incomplete without resolution
 - Fundamental blocker requiring clarification
+- **MANDATORY on first pass** (restart_count = 0, even if all criteria met)
+
+---
+
+## MANDATORY RESTART REQUIREMENT
+
+**The pipeline MUST restart at least once before COMPLETE.**
+
+### restart_count Rules
+
+| restart_count | Decision Allowed |
+|---------------|-----------------|
+| 0 (first pass) | RESTART only |
+| 1+ (subsequent) | COMPLETE or RESTART |
+
+### First Pass Behavior
+
+**On first pass (restart_count = 0), you MUST output RESTART:**
+```markdown
+### Decision: RESTART
+
+### Justification
+First pass complete. All acceptance criteria appear to be met, but mandatory restart is required for verification.
+
+### Reason for Restart
+Pipeline protocol requires at least one restart before COMPLETE to ensure thorough verification of implementation.
+
+### Restart Objective
+Verify implementation through second pass. All features will be re-validated.
+```
+
+### Subsequent Pass Behavior
+
+**On subsequent pass (restart_count >= 1), you CAN output COMPLETE:**
+```markdown
+### Decision: COMPLETE
+
+### Justification
+All acceptance criteria verified through second pass:
+- restart_count: 1 (verification pass)
+- All features implemented and tested
+- Review passed
+
+### Evidence
+- **Tests:** All passing
+- **Review:** No blockers
+- **Restart Verification:** Implementation confirmed through mandatory restart
+```
+
+### Checking restart_count
+
+Your input will include PipelineState with restart_count:
+```
+PipelineState:
+  restart_count: 0  <-- Check this value
+```
+
+If restart_count = 0, you MUST output RESTART regardless of criteria status.
+
+---
+
+## DEEP VERIFICATION (MANDATORY)
+
+**Before making your decision, you MUST perform deep verification across all reports.**
+
+### 1. Cross-Reference All Reports
+**Verify consistency across pipeline stages:**
+
+| Check | TaskSpec | Build Report | Test Report | Review Report |
+|-------|----------|--------------|-------------|---------------|
+| Feature count | F1, F2, F3 | F1, F2, F3 implemented | Tests for F1, F2, F3 | Criteria for F1, F2, F3 |
+| File changes | N/A | 5 files | 5 files tested | 5 files reviewed |
+| Acceptance criteria | 8 criteria | 8 addressed | 8 tested | 8 verified |
+
+**If counts don't match:** This is a signal for RESTART.
+
+### 2. Evidence-Based Verification
+**For each feature, trace through the pipeline:**
+
+```markdown
+#### F1: Health Check Endpoint
+- **TaskSpec:** AC1.1, AC1.2, AC1.3 defined
+- **Build Report:** /app/health.py created (C1, C2, C3 in ledger)
+- **Test Report:** test_health.py - 3 tests passed
+- **Review Report:** All criteria marked MET with code evidence
+
+**Verification:** COMPLETE - All pipeline stages consistent
+```
+
+### 3. Quality Threshold Check
+**Verify minimum quality standards:**
+
+| Threshold | Required | Actual | Status |
+|-----------|----------|--------|--------|
+| Test pass rate | 100% | [from Test Report] | PASS/FAIL |
+| Coverage | >80% | [from Test Report] | PASS/FAIL |
+| Blockers | 0 | [from Review Report] | PASS/FAIL |
+| Criteria met | 100% | [from Review Report] | PASS/FAIL |
+
+**If ANY threshold fails:** Decision should be RESTART.
+
+### Verification Evidence Format
+
+Your Decision MUST include this section:
+```markdown
+### Verification Evidence
+
+#### Cross-Reference Check
+| Item | TaskSpec | Build | Test | Review | Consistent? |
+|------|----------|-------|------|--------|-------------|
+| Features | 2 | 2 | 2 | 2 | YES |
+| Files | N/A | 4 | 4 | 4 | YES |
+| Criteria | 6 | 6 | 6 | 6 | YES |
+
+#### Feature Trace
+- F1: TaskSpec -> Build (C1-C3) -> Test (PASS) -> Review (MET) = COMPLETE
+- F2: TaskSpec -> Build (C4-C6) -> Test (PASS) -> Review (MET) = COMPLETE
+
+#### Quality Thresholds
+| Metric | Required | Actual | Status |
+|--------|----------|--------|--------|
+| Tests | 100% pass | 100% | PASS |
+| Coverage | >80% | 87% | PASS |
+| Blockers | 0 | 0 | PASS |
+
+#### Decision Basis
+All features traced through pipeline with consistent evidence.
+All quality thresholds met.
+Decision: COMPLETE
+```
 
 ---
 

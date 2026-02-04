@@ -49,6 +49,23 @@ if ! echo "$OUTPUT" | grep -qi "Next\|Recommendation\|Proceed" 2>/dev/null; then
     WARNINGS+=("Missing section: Next steps/Recommendation (recommended)")
 fi
 
+# Check for Deep Verification Evidence (recommended)
+if ! echo "$OUTPUT" | grep -qi "Verification Evidence\|Evidence:" 2>/dev/null; then
+    WARNINGS+=("Missing section: Verification Evidence (deep verification required)")
+fi
+
+if ! echo "$OUTPUT" | grep -qi "Anti-Destruction\|Destruction Audit\|scope creep\|placeholder" 2>/dev/null; then
+    WARNINGS+=("Missing section: Anti-Destruction audit evidence (recommended)")
+fi
+
+if ! echo "$OUTPUT" | grep -qi "Convention\|Compliance\|snake_case\|camelCase\|naming" 2>/dev/null; then
+    WARNINGS+=("Missing section: Convention compliance evidence (recommended)")
+fi
+
+if ! echo "$OUTPUT" | grep -qi "Security\|secret\|hardcoded" 2>/dev/null; then
+    WARNINGS+=("Missing section: Security review evidence (recommended)")
+fi
+
 # Output result as JSON
 if [ ${#ERRORS[@]} -eq 0 ]; then
     WARN_JSON="[]"
