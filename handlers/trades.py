@@ -49,6 +49,7 @@ from utils.helpers import (
 )
 from services.pnl_service import get_pnl_service
 from services.price_service import get_price_service
+from services.snapshot_service import get_snapshot_service
 from utils.keyboards import (
     back_cancel_keyboard,
     back_to_menu_keyboard,
@@ -1771,6 +1772,28 @@ async def handle_trade_confirm(
         return ConversationHandler.END
 
     telegram_id = update.effective_user.id
+
+    # Ensure daily snapshot before creating trade
+    try:
+        async with get_session() as session:
+            from handlers.accounts import get_user_by_telegram_id
+            user = await get_user_by_telegram_id(session, telegram_id)
+            if user:
+                snapshot_service = get_snapshot_service()
+                created = await snapshot_service.ensure_daily_snapshot(user.id)
+                if created:
+                    logger.info(
+                        "daily_snapshot_created_before_trade",
+                        user_id=user.id,
+                        telegram_id=telegram_id,
+                    )
+    except Exception as e:
+        logger.warning(
+            "snapshot_creation_failed_before_trade",
+            error=str(e),
+            telegram_id=telegram_id,
+        )
+        # Continue with trade - snapshot failure shouldn't block trading
 
     try:
         async with get_session() as session:

@@ -120,7 +120,72 @@ When analyzing trades or performance:
 
 You have access to the user's trading context which will be provided. Use it to give personalized, data-driven advice.
 
-Keep responses concise but impactful. Traders want actionable insights, not essays."""
+Keep responses concise but impactful. Traders want actionable insights, not essays.
+
+## Action Capabilities
+
+When the user asks you to add a trade, create an account, or edit existing data, respond with a structured action block.
+
+### Adding a Trade
+When user wants to add/log/record a trade, output:
+```json
+{
+  "action": "add_trade",
+  "data": {
+    "instrument": "SYMBOL",
+    "direction": "long" or "short",
+    "entry_price": NUMBER,
+    "lot_size": NUMBER (optional, default 1.0),
+    "sl_price": NUMBER (optional),
+    "tp_price": NUMBER (optional)
+  },
+  "confirmation_message": "Describe what you'll create"
+}
+```
+
+### Adding an Account
+When user wants to create/add a new account, output:
+```json
+{
+  "action": "add_account",
+  "data": {
+    "name": "Account Name",
+    "starting_balance": NUMBER,
+    "currency": "USD" (optional, default USD),
+    "broker": "Broker Name" (optional)
+  },
+  "confirmation_message": "Describe what you'll create"
+}
+```
+
+### Editing a Trade
+When user wants to modify/update/change a trade, output:
+```json
+{
+  "action": "edit_trade",
+  "data": {
+    "target": {"instrument": "SYMBOL"} or {"trade_id": NUMBER},
+    "changes": {"field_name": NEW_VALUE}
+  },
+  "confirmation_message": "Describe the edit"
+}
+```
+
+### Editing an Account
+When user wants to modify/update/change an account, output:
+```json
+{
+  "action": "edit_account",
+  "data": {
+    "target": {"name": "Account Name"} or {"account_id": NUMBER},
+    "changes": {"field_name": NEW_VALUE}
+  },
+  "confirmation_message": "Describe the edit"
+}
+```
+
+Important: Always include a clear confirmation_message. The user must confirm before the action executes.
+If you're unsure about any values, ask the user for clarification instead of guessing."""
 
 
 class AIService:

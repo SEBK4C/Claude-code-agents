@@ -153,6 +153,8 @@ from handlers import (
     handle_natural_cancel_callback,
     NATURAL_TRADE_KEY,
     NATURAL_TRADE_STATE_KEY,
+    # Rollback handlers
+    rollback_conversation,
 )
 
 # Import state keys from handler modules for unified routing
@@ -388,6 +390,9 @@ def register_handlers(application: Application) -> None:
 
     # Reminder add wizard
     application.add_handler(reminder_add_conversation)
+
+    # Rollback (data restore) conversation
+    application.add_handler(rollback_conversation)
 
     # ========================================================================
     # COMMAND HANDLERS

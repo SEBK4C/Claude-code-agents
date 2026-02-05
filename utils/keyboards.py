@@ -43,6 +43,9 @@ def main_menu_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton("Reminders", callback_data="menu_reminders"),
             InlineKeyboardButton("Help", callback_data="menu_help"),
         ],
+        [
+            InlineKeyboardButton("Rollback Data", callback_data="menu_rollback"),
+        ],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -301,6 +304,69 @@ def back_cancel_keyboard(
         [
             InlineKeyboardButton(back_text, callback_data=back_data),
             InlineKeyboardButton(cancel_text, callback_data=cancel_data),
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def rollback_menu_keyboard(
+    snapshots: list[tuple[int, str, int, int]],
+) -> InlineKeyboardMarkup:
+    """
+    Create a keyboard for selecting a snapshot to restore.
+
+    Args:
+        snapshots: A list of (snapshot_id, date_str, num_trades, num_accounts) tuples.
+
+    Returns:
+        InlineKeyboardMarkup: A keyboard with snapshot buttons and back button.
+    """
+    keyboard = []
+
+    for snapshot_id, date_str, num_trades, num_accounts in snapshots:
+        label = f"{date_str} - {num_trades} trades, {num_accounts} accounts"
+        keyboard.append([
+            InlineKeyboardButton(
+                label,
+                callback_data=f"rollback_select_{snapshot_id}",
+            )
+        ])
+
+    if not snapshots:
+        keyboard.append([
+            InlineKeyboardButton(
+                "No snapshots available",
+                callback_data="rollback_noop",
+            )
+        ])
+
+    keyboard.append([
+        InlineKeyboardButton("Back to Menu", callback_data="menu_main")
+    ])
+
+    return InlineKeyboardMarkup(keyboard)
+
+
+def rollback_confirm_keyboard(snapshot_id: int) -> InlineKeyboardMarkup:
+    """
+    Create a confirmation keyboard for restoring a snapshot.
+
+    Args:
+        snapshot_id: The ID of the snapshot to restore.
+
+    Returns:
+        InlineKeyboardMarkup: A keyboard with Confirm and Cancel buttons.
+    """
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Confirm Restore",
+                callback_data=f"rollback_confirm_{snapshot_id}",
+            ),
+            InlineKeyboardButton(
+                "Cancel",
+                callback_data="rollback_cancel",
+            ),
         ]
     ]
     return InlineKeyboardMarkup(keyboard)

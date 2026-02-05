@@ -126,6 +126,13 @@ from handlers.natural_input import (
     NATURAL_TRADE_KEY,
     NATURAL_TRADE_STATE_KEY,
 )
+from handlers.rollback import (
+    handle_rollback_cancel,
+    handle_rollback_confirm,
+    handle_rollback_menu,
+    handle_rollback_select,
+    rollback_conversation,
+)
 
 __all__ = [
     # Start handlers
@@ -236,4 +243,10 @@ __all__ = [
     "handle_natural_cancel_callback",
     "NATURAL_TRADE_KEY",
     "NATURAL_TRADE_STATE_KEY",
+    # Rollback handlers
+    "rollback_conversation",
+    "handle_rollback_menu",
+    "handle_rollback_select",
+    "handle_rollback_confirm",
+    "handle_rollback_cancel",
 ]

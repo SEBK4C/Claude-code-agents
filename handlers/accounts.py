@@ -35,6 +35,7 @@ from utils.keyboards import (
     confirmation_keyboard,
 )
 from utils.validation import validate_account_name, validate_price
+from services.snapshot_service import get_snapshot_service
 
 logger = get_logger(__name__)
 
@@ -391,6 +392,27 @@ async def handle_account_confirm(
         return ConversationHandler.END
 
     telegram_id = update.effective_user.id
+
+    # Ensure daily snapshot before creating account
+    try:
+        async with get_session() as session:
+            user = await get_user_by_telegram_id(session, telegram_id)
+            if user:
+                snapshot_service = get_snapshot_service()
+                created = await snapshot_service.ensure_daily_snapshot(user.id)
+                if created:
+                    logger.info(
+                        "daily_snapshot_created_before_account",
+                        user_id=user.id,
+                        telegram_id=telegram_id,
+                    )
+    except Exception as e:
+        logger.warning(
+            "snapshot_creation_failed_before_account",
+            error=str(e),
+            telegram_id=telegram_id,
+        )
+        # Continue with account creation - snapshot failure shouldn't block operations
 
     try:
         async with get_session() as session:
@@ -885,6 +907,28 @@ async def handle_transaction_amount(
     account_id = trans_data["account_id"]
     transaction_type = trans_data["type"]
     telegram_id = update.effective_user.id
+
+    # Ensure daily snapshot before modifying account balance
+    try:
+        async with get_session() as session:
+            user = await get_user_by_telegram_id(session, telegram_id)
+            if user:
+                snapshot_service = get_snapshot_service()
+                created = await snapshot_service.ensure_daily_snapshot(user.id)
+                if created:
+                    logger.info(
+                        "daily_snapshot_created_before_transaction",
+                        user_id=user.id,
+                        telegram_id=telegram_id,
+                        transaction_type=transaction_type,
+                    )
+    except Exception as e:
+        logger.warning(
+            "snapshot_creation_failed_before_transaction",
+            error=str(e),
+            telegram_id=telegram_id,
+        )
+        # Continue with transaction - snapshot failure shouldn't block operations
 
     try:
         async with get_session() as session:

@@ -8,10 +8,10 @@ including default tags and reminder schedules.
 from datetime import time
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.db import get_session
+from database.db import get_engine, get_session
 from database.models import Reminder, Tag, User
 
 
@@ -222,3 +222,64 @@ async def ensure_default_data() -> None:
     """
     async with get_session() as session:
         await seed_default_data(session)
+
+
+async def migrate_add_snapshots() -> None:
+    """
+    Add data_snapshots table for rollback functionality.
+
+    This migration creates the data_snapshots table if it doesn't exist,
+    along with indexes for efficient querying by user_id and snapshot_date.
+
+    The table stores point-in-time snapshots of user data that can be
+    used to restore accounts, trades, and transactions to a previous state.
+
+    Example:
+        # During app startup or migration script
+        await migrate_add_snapshots()
+    """
+    engine = get_engine()
+    async with engine.begin() as conn:
+        # Create data_snapshots table
+        await conn.execute(text('''
+            CREATE TABLE IF NOT EXISTS data_snapshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                snapshot_date DATE NOT NULL,
+                snapshot_data TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        '''))
+
+        # Create index on user_id for efficient user-based queries
+        await conn.execute(text('''
+            CREATE INDEX IF NOT EXISTS ix_data_snapshots_user_id
+            ON data_snapshots(user_id)
+        '''))
+
+        # Create index on snapshot_date for date-based filtering
+        await conn.execute(text('''
+            CREATE INDEX IF NOT EXISTS ix_data_snapshots_snapshot_date
+            ON data_snapshots(snapshot_date)
+        '''))
+
+        # Create composite index for user + date queries
+        await conn.execute(text('''
+            CREATE INDEX IF NOT EXISTS ix_data_snapshots_user_date
+            ON data_snapshots(user_id, snapshot_date)
+        '''))
+
+
+async def run_all_migrations() -> None:
+    """
+    Run all database migrations.
+
+    This function executes all migration functions in order.
+    It's safe to call multiple times as each migration is idempotent.
+
+    Example:
+        # During app startup
+        await run_all_migrations()
+    """
+    await migrate_add_snapshots()

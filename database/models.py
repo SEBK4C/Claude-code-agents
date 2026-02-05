@@ -5,12 +5,13 @@ This module defines all SQLAlchemy 2.0 async models using the
 Mapped and mapped_column patterns.
 """
 
-from datetime import datetime, time
+from datetime import date, datetime, time
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Optional
 
 from sqlalchemy import (
+    Date,
     JSON,
     Boolean,
     DateTime,
@@ -78,6 +79,9 @@ class User(Base):
     )
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="user", cascade="all, delete-orphan"
+    )
+    snapshots: Mapped[list["DataSnapshot"]] = relationship(
+        "DataSnapshot", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
@@ -306,3 +310,30 @@ class Reminder(Base):
 
     def __repr__(self) -> str:
         return f"<Reminder(id={self.id}, time_utc={self.time_utc}, enabled={self.enabled})>"
+
+
+class DataSnapshot(Base):
+    """
+    Data snapshot model for storing point-in-time backups of user data.
+
+    Enables data rollback functionality by storing serialized copies of
+    all user accounts, trades, and transactions at a specific date.
+    Snapshots are created daily and can be used to restore user data
+    to a previous state.
+    """
+
+    __tablename__ = "data_snapshots"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    snapshot_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    snapshot_data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", back_populates="snapshots")
+
+    def __repr__(self) -> str:
+        return f"<DataSnapshot(id={self.id}, user_id={self.user_id}, snapshot_date={self.snapshot_date})>"
