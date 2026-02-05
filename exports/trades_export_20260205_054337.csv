@@ -1,2 +1,0 @@
-id,account,instrument,direction,entry_price,exit_price,sl,tp,lot_size,pnl,pnl_percent,strategy,tags,notes,opened_at,closed_at
-1,Dylan,DAX,short,24837.00000000,24609.00000000,,,3.00000000,684.00,0.9180,,,None,2026-02-04T22:39:30.151289,2026-02-04T22:40:07.045304
