@@ -10,20 +10,30 @@ This guide explains how to integrate the Multi-Agent Framework into your workflo
 Claude-code-agents/
 ├── CLAUDE.md                    # Main orchestrator instructions
 ├── .ai/
-│   └── README.md               # Agent Configuration Manifest (ACM)
+│   ├── README.md               # Agent Configuration Manifest (ACM)
+│   └── schemas/                # Pipeline schemas
+│       ├── pipeline-context-schema.md
+│       └── pipeline-state-schema.md
 ├── .claude/
 │   ├── settings.json           # Permission settings
-│   ├── agents/                 # Agent definitions
+│   ├── agents/                 # Agent definitions (83 agents + README)
 │   │   ├── README.md
+│   │   ├── prompt-optimizer.md
 │   │   ├── task-breakdown.md
+│   │   ├── intent-confirmer.md
+│   │   ├── context-validator.md
 │   │   ├── code-discovery.md
 │   │   ├── plan-agent.md
-│   │   ├── web-syntax-researcher.md
-│   │   ├── build-agent.md
-│   │   ├── debugger.md
+│   │   ├── docs-researcher.md
+│   │   ├── pre-flight-checker.md
+│   │   ├── build-agent-1.md through build-agent-55.md  # 55 build agents
+│   │   ├── debugger.md through debugger-11.md          # 11 debugger agents
+│   │   ├── logical-agent.md
 │   │   ├── test-agent.md
+│   │   ├── integration-agent.md
 │   │   ├── review-agent.md
-│   │   └── decide-agent.md
+│   │   ├── decide-agent.md
+│   │   └── web-syntax-researcher.md  # DEPRECATED (use docs-researcher)
 │   ├── commands/               # Slash commands
 │   │   ├── pipeline.md
 │   │   ├── status.md

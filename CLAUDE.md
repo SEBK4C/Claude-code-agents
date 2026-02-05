@@ -29,6 +29,7 @@ Your allowed tools:
 |-------|-------|------|
 | -1 | prompt-optimizer | ALWAYS FIRST - optimizes prompt before dispatching to any agent |
 | 0 | task-breakdown | ALWAYS (after prompt-optimizer) |
+| 0.25 | intent-confirmer | ALWAYS - confirms user intent matches TaskSpec |
 | 0.5 | context-validator | ALWAYS - validates PipelineContext integrity |
 | 1 | code-discovery | ALWAYS |
 | 2 | plan-agent | ALWAYS |
@@ -50,6 +51,7 @@ Your allowed tools:
 
 This applies to ALL pipeline stages:
 - Stage 0: task-breakdown
+- Stage 0.25: intent-confirmer
 - Stage 0.5: context-validator
 - Stage 1: code-discovery
 - Stage 2: plan-agent
@@ -163,6 +165,7 @@ Task tool:
 **Available agents (defined in .claude/agents/):**
 - `prompt-optimizer` - Stage -1 (ALWAYS FIRST - optimizes prompts before any agent dispatch)
 - `task-breakdown` - Stage 0 (after prompt-optimizer)
+- `intent-confirmer` - Stage 0.25 (confirms user intent matches TaskSpec)
 - `context-validator` - Stage 0.5 (validates PipelineContext integrity)
 - `code-discovery` - Stage 1
 - `plan-agent` - Stage 2
@@ -397,6 +400,7 @@ Stage 2 completes -> stage_outputs.stage_2_plan = ImplementationPlan
 | Target Stage | Required Context |
 |--------------|-----------------|
 | Stage 0 | user_request |
+| Stage 0.25 | user_request, TaskSpec |
 | Stage 1 | user_request, TaskSpec |
 | Stage 2 | user_request, TaskSpec, RepoProfile |
 | Stage 3 | user_request, TaskSpec, Plan |
@@ -555,6 +559,7 @@ VERIFICATION RULES:
 ## Pipeline Status
 - [x] Stage -1: prompt-optimizer
 - [x] Stage 0: task-breakdown
+- [ ] Stage 0.25: intent-confirmer
 - [ ] Stage 0.5: context-validator
 - [x] Stage 1: code-discovery
 - [ ] Stage 2: plan-agent (IN PROGRESS)
@@ -765,6 +770,7 @@ color: blue
 |------------|-----------------|------------------|
 | **prompt-optimizer** | Read, Grep, Glob, Bash | Optimize prompts before dispatch |
 | **task-breakdown** | Read, Grep, Glob, Bash | Decompose requests into TaskSpec |
+| **intent-confirmer** | Read | Confirm user intent matches TaskSpec |
 | **context-validator** | Read | Validate PipelineContext integrity |
 | **code-discovery** | Read, Grep, Glob, Bash | Analyze codebase, create RepoProfile |
 | **plan-agent** | Read, Grep, Glob, Bash | Create batched implementation plan |

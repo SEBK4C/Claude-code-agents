@@ -1,6 +1,6 @@
 # Agent Definitions
 
-This directory contains the agent definition files for the multi-agent framework. Each agent has a specific role in the 9-stage pipeline.
+This directory contains the agent definition files for the multi-agent framework. Each agent has a specific role in the multi-stage pipeline (Stages -1 through 8, including sub-stages).
 
 ## Agent Files
 
@@ -13,6 +13,16 @@ This directory contains the agent definition files for the multi-agent framework
 
 ### Stage 0: task-breakdown.md
 **Role:** Analyzes user requests and creates structured TaskSpec
+**Always required:** YES
+**Re-run eligible:** YES
+
+### Stage 0.25: intent-confirmer.md
+**Role:** Validates TaskSpec intent matches user's original request
+**Always required:** YES (validates TaskSpec before proceeding)
+**Re-run eligible:** YES
+
+### Stage 0.5: context-validator.md
+**Role:** Validates PipelineContext integrity between stages
 **Always required:** YES
 **Re-run eligible:** YES
 
@@ -32,21 +42,29 @@ This directory contains the agent definition files for the multi-agent framework
 **Re-run eligible:** YES
 **Special:** Uses Context7 MCP for up-to-date documentation
 
+### Stage 3.5: pre-flight-checker.md
+**Role:** Pre-implementation sanity checks before build agents
+**Always required:** YES (runs before any build-agent)
+**Re-run eligible:** YES
+
 ### Stage 3b: web-syntax-researcher.md (DEPRECATED - use docs-researcher)
 **Role:** Researches uncertain APIs, frameworks, and syntax patterns
 **Always required:** NO (superseded by docs-researcher)
 **Re-run eligible:** YES
+**Status:** DEPRECATED
 
-### Stage 4: build-agent.md
+### Stage 4: build-agent-1 through build-agent-55
 **Role:** Implements assigned features per the plan
 **Always required:** NO (triggered when code changes needed)
 **Re-run eligible:** YES
-**Instances:** build-agent-1 through build-agent-5
+**Instances:** 55 active build agents (build-agent-1 through build-agent-55)
+**Note:** build-agent.md is a deprecated template; use numbered instances
 
-### Stage 5: debugger.md
+### Stage 5: debugger through debugger-11
 **Role:** Diagnoses and fixes errors, test failures, and bugs
 **Always required:** NO (triggered on errors)
 **Re-run eligible:** YES
+**Instances:** 11 debugger agents (debugger, debugger-2 through debugger-11)
 
 ### Stage 5.5: logical-agent.md
 **Role:** Verifies code logic correctness using deep Opus reasoning
@@ -60,6 +78,12 @@ This directory contains the agent definition files for the multi-agent framework
 **Always required:** YES
 **Re-run eligible:** YES
 **Special:** MUST request debugger on ANY failure
+
+### Stage 6.5: integration-agent.md
+**Role:** Integration testing specialist
+**Always required:** YES (runs after test-agent)
+**Re-run eligible:** YES
+**Special:** Tests integration between components and systems
 
 ### Stage 7: review-agent.md
 **Role:** Reviews changes against acceptance criteria and quality standards
@@ -119,19 +143,27 @@ To use these agents in your repository:
 ### Mandatory Stages
 These stages MUST run for EVERY request:
 - Stage -1: prompt-optimizer (ALWAYS FIRST - optimizes prompt before any dispatch)
-- Stage 0: task-breakdown (ALWAYS SECOND - after prompt-optimizer)
-- Stage 1: code-discovery (ALWAYS THIRD)
-- Stage 2: plan-agent (ALWAYS FOURTH)
+- Stage 0: task-breakdown (after prompt-optimizer)
+- Stage 0.25: intent-confirmer (validates TaskSpec intent)
+- Stage 0.5: context-validator (validates PipelineContext integrity)
+- Stage 1: code-discovery
+- Stage 2: plan-agent
+- Stage 3: docs-researcher (MANDATORY before any build-agent)
+- Stage 3.5: pre-flight-checker (pre-implementation sanity checks)
 - Stage 6: test-agent (ALWAYS REQUIRED)
+- Stage 6.5: integration-agent (integration testing)
 - Stage 7: review-agent (ALWAYS REQUIRED)
 - Stage 8: decide-agent (ALWAYS FINAL)
 
 ### Conditional Stages
 These stages run only when needed:
-- Stage 3: web-syntax-researcher (when uncertain about APIs/syntax)
-- Stage 4: build-agent (when code changes needed)
-- Stage 5: debugger (when errors occur)
+- Stage 4: build-agent-1 through build-agent-55 (when code changes needed)
+- Stage 5: debugger through debugger-11 (when errors occur)
 - Stage 5.5: logical-agent (after build, verifies logic correctness)
+
+### Deprecated Agents
+- web-syntax-researcher.md (superseded by docs-researcher)
+- build-agent.md (template only; use numbered instances build-agent-1 through build-agent-55)
 
 ### Re-run Rules
 - **Any agent (except decide-agent) can request re-runs** of other agents
@@ -143,15 +175,25 @@ These stages run only when needed:
 |-------|-------------|----------------|
 | prompt-optimizer | None (outputs optimized prompt only) | All agents |
 | task-breakdown | Any agent | decide-agent mid-pipeline |
+| intent-confirmer | task-breakdown (for re-clarification) | decide-agent mid-pipeline |
+| context-validator | Any agent | decide-agent mid-pipeline |
 | code-discovery | Any agent | decide-agent mid-pipeline |
 | plan-agent | Any agent | decide-agent mid-pipeline |
-| web-syntax-researcher | Any agent | decide-agent mid-pipeline |
-| build-agent-N | Any agent | decide-agent mid-pipeline |
-| debugger | Any agent | decide-agent mid-pipeline |
+| docs-researcher | Any agent | decide-agent mid-pipeline |
+| pre-flight-checker | Any agent | decide-agent mid-pipeline |
+| build-agent-1 through build-agent-55 | Any agent | decide-agent mid-pipeline |
+| debugger through debugger-11 | Any agent | decide-agent mid-pipeline |
 | logical-agent | build-agent, debugger, code-discovery, test-agent | decide-agent mid-pipeline |
 | test-agent | Any agent (MUST request debugger on failure) | decide-agent mid-pipeline |
+| integration-agent | Any agent | decide-agent mid-pipeline |
 | review-agent | Any agent | decide-agent mid-pipeline |
 | **decide-agent** | **NONE** | **ALL agents** |
+
+**Deprecated agents (do not use):**
+| Agent | Status | Replacement |
+|-------|--------|-------------|
+| web-syntax-researcher | DEPRECATED | docs-researcher |
+| build-agent (template) | DEPRECATED | build-agent-1 through build-agent-55 |
 
 ## Special Policies
 

@@ -10,8 +10,14 @@ This directory stores validation logs from the agent pipeline hooks.
 
 Examples:
 - `20260121_143052_task-breakdown_valid.log`
+- `20260121_143055_intent-confirmer_pass.log`
+- `20260121_143058_context-validator_valid.log`
 - `20260121_143105_build-agent-1_invalid.log`
-- `20260121_143200_review-agent_valid.log`
+- `20260121_143110_build-agent-55_valid.log`
+- `20260121_143115_pre-flight-checker_valid.log`
+- `20260121_143200_integration-agent_valid.log`
+- `20260121_143210_review-agent_valid.log`
+- `20260121_143220_debugger-11_valid.log`
 
 ## Log Format
 
@@ -45,9 +51,11 @@ Each log file contains JSON lines (JSONL) with the following structure:
 
 ## Auto-Cleanup Policy
 
-Logs older than 7 days are automatically cleaned up.
+Logs older than 7 days are automatically cleaned up for validation logs in this directory.
 
-To manually clean up old logs:
+**Note:** Observability logs (in `.claude/hooks/logs/observability/`) have a separate 24-hour TTL policy managed by the observability system. See `.claude/hooks/observability/README.md` for details.
+
+To manually clean up old validation logs:
 ```bash
 find .claude/hooks/logs -name "*.log" -mtime +7 -delete
 ```

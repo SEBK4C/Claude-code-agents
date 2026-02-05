@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is the Claude Code Multi-Agent Framework - a 9-stage pipeline for orchestrated software development with specialized agents.
+This is the Claude Code Multi-Agent Framework - a 15-stage pipeline for orchestrated software development with specialized agents.
 
 ## Installation
 
@@ -35,13 +35,19 @@ cp -r /path/to/Claude-code-agents/.ai /path/to/your/project/
 
 | Stage | Agent | Purpose |
 |-------|-------|---------|
+| -1 | prompt-optimizer | Optimize prompts before dispatch |
 | 0 | task-breakdown | Analyze request, create TaskSpec |
+| 0.25 | intent-confirmer | Confirm TaskSpec matches user intent |
+| 0.5 | context-validator | Validate pipeline context integrity |
 | 1 | code-discovery | Explore codebase, create RepoProfile |
 | 2 | plan-agent | Create implementation plan |
-| 3 | web-syntax-researcher | Research APIs/syntax (if needed) |
-| 4 | build-agent | Implement features (if code needed) |
-| 5 | debugger | Fix errors (if any) |
+| 3 | docs-researcher | Research library documentation (Context7 MCP) |
+| 3.5 | pre-flight-checker | Pre-implementation sanity checks |
+| 4 | build-agent-1 to 55 | Implement features (55 agents) |
+| 5 | debugger to debugger-11 | Fix errors (11 agents) |
+| 5.5 | logical-agent | Verify code logic correctness |
 | 6 | test-agent | Run tests (ALWAYS) |
+| 6.5 | integration-agent | Integration testing |
 | 7 | review-agent | Review changes (ALWAYS) |
 | 8 | decide-agent | Final decision (ALWAYS) |
 
@@ -50,10 +56,11 @@ cp -r /path/to/Claude-code-agents/.ai /path/to/your/project/
 ### Starting the Pipeline
 
 Simply make a request to Claude Code. The orchestrator will:
-1. Dispatch to task-breakdown
-2. Progress through all required stages
-3. Report status at each stage
-4. Complete when decide-agent outputs COMPLETE
+1. Dispatch to prompt-optimizer first
+2. Then dispatch to task-breakdown
+3. Progress through all required stages
+4. Report status at each stage
+5. Complete when decide-agent outputs COMPLETE
 
 ### Slash Commands
 
@@ -68,6 +75,15 @@ User: Add a health check endpoint to the API
 
 Orchestrator:
 ## Pipeline Status
+- [ ] Stage -1: prompt-optimizer (IN PROGRESS)
+...
+
+Dispatching to prompt-optimizer...
+
+[prompt-optimizer completes]
+
+## Pipeline Status
+- [x] Stage -1: prompt-optimizer
 - [ ] Stage 0: task-breakdown (IN PROGRESS)
 ...
 
@@ -76,8 +92,9 @@ Dispatching to task-breakdown...
 [task-breakdown completes]
 
 ## Pipeline Status
-- [x] Stage 0: task-breakdown [Run 1]
-- [ ] Stage 1: code-discovery (IN PROGRESS)
+- [x] Stage -1: prompt-optimizer
+- [x] Stage 0: task-breakdown
+- [ ] Stage 0.25: intent-confirmer (IN PROGRESS)
 ...
 
 [continues through all stages until decide-agent outputs COMPLETE]
@@ -87,12 +104,19 @@ Dispatching to task-breakdown...
 
 ### Agent Outputs
 
+- **prompt-optimizer** -> Optimized Prompt (XML structured)
 - **task-breakdown** -> TaskSpec
+- **intent-confirmer** -> Intent Confirmation
+- **context-validator** -> Validation Report
 - **code-discovery** -> RepoProfile
 - **plan-agent** -> Implementation Plan
-- **build-agent** -> Build Report
-- **debugger** -> Debug Report
+- **docs-researcher** -> Documentation Research
+- **pre-flight-checker** -> Pre-flight Report
+- **build-agent-1 to 55** -> Build Report
+- **debugger to debugger-11** -> Debug Report
+- **logical-agent** -> Logic Verification Report
 - **test-agent** -> Test Report
+- **integration-agent** -> Integration Test Report
 - **review-agent** -> Review Report
 - **decide-agent** -> COMPLETE / RESTART / ESCALATE
 

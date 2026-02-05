@@ -42,6 +42,7 @@ Each stage requires specific context from previous stages:
 
 | Target Stage | Required Context |
 |--------------|-----------------|
+| Stage 0.25 (intent-confirmer) | user_request, TaskSpec |
 | Stage 1 (code-discovery) | user_request, TaskSpec |
 | Stage 2 (plan-agent) | user_request, TaskSpec, RepoProfile |
 | Stage 3 (docs-researcher) | user_request, TaskSpec, Plan |
