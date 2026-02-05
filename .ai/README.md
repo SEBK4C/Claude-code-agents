@@ -210,7 +210,7 @@ This pipeline implements the **PITER methodology** for autonomous software engin
 | Phase | Description | Stage(s) | Agent(s) |
 |-------|-------------|----------|----------|
 | **P**lan | Analyze request, validate context, discover codebase, create implementation plan | 0, 0.5, 1, 2 | task-breakdown, context-validator, code-discovery, plan-agent |
-| **I**mplement | Research docs, pre-flight checks, write code per the plan | 3, 3.5, 4 | docs-researcher, pre-flight-checker, build-agent-1/2/3/4/5 |
+| **I**mplement | Research docs, pre-flight checks, write code per the plan | 3, 3.5, 4 | docs-researcher, pre-flight-checker, build-agent-1 through build-agent-55 |
 | **T**est | Run unit tests, integration tests, never block pipeline | 6, 6.5 | test-agent, integration-agent |
 | **E**valuate | Review against acceptance criteria, check anti-destruction | 7 | review-agent |
 | **R**efine | Fix errors, verify logic, cycle back as needed | 5, 5.5 | debugger, logical-agent |
@@ -258,6 +258,8 @@ The ultimate goal is **autonomous shipping**: the codebase ships itself through 
 1. Report what was completed
 2. Continue work until the task is fully complete
 3. Pass context between continuation agents as needed
+4. **Chain unlimited build agents (1-55) for quality** - invoke as many as needed
+5. Quality over speed - never stop mid-feature due to artificial limits
 
 ### On External Blockers
 1. Document the blocker clearly

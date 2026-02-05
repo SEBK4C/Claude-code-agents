@@ -1,0 +1,1 @@
+{"timestamp":"2026-02-04T20:32:39Z","agent":"task-breakdown","valid":true,"errors":[],"warnings":[],"preview":"## TaskSpec  ### Features - F1: Implement user authentication  ### Acceptance Criteria - AC1: Users can log in with email/password  ### Risks - R1: Security vulnerabilities  ### Assumptions - A1: Data"}

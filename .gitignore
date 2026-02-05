@@ -2,6 +2,8 @@
 .claude/.prompts/*.md
 !.claude/.prompts/README.md
 !.claude/.prompts/.gitkeep
+.env
+
 
 # Observability logs (auto-deleted after 24 hours)
 .claude/hooks/logs/observability/*.jsonl

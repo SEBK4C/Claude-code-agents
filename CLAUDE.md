@@ -55,7 +55,7 @@ This applies to ALL pipeline stages:
 - Stage 2: plan-agent
 - Stage 3: docs-researcher
 - Stage 3.5: pre-flight-checker
-- Stage 4: build-agent-1/2/3/4/5
+- Stage 4: build-agent-1 through build-agent-55
 - Stage 5: debugger
 - Stage 5.5: logical-agent
 - Stage 6: test-agent
@@ -198,6 +198,119 @@ debugger → debugger-2 → ... → debugger-11
 - If errors remain → dispatch next agent (debugger→2→...→11→debugger→...)
 - Pass: what's fixed + what remains
 - Cycle continues until all errors resolved
+
+### Build Agent Deep-Dive
+
+**Purpose:** Build agents are specialized file implementation engineers. Each agent focuses on writing production-quality code based on detailed instructions.
+
+**Workflow Per Agent (6 Steps):**
+1. **Read and analyze the specification thoroughly**
+   - Extract the target file path
+   - Identify all requirements and constraints
+   - Note code style, patterns, and conventions
+
+2. **Gather context by reading referenced files**
+   - Use Read to examine example files
+   - Use Grep/Glob to find related files
+   - Study codebase structure and existing patterns
+
+3. **Understand codebase conventions**
+   - Analyze import styles and module organization
+   - Identify naming conventions
+   - Note error handling patterns
+
+4. **Implement the file according to specification**
+   - Write production-quality code with proper error handling
+   - Include appropriate type annotations
+   - Follow all specified patterns exactly
+
+5. **Verify the implementation**
+   - Run type checks if applicable
+   - Run linters or formatters
+   - Verify the file compiles/parses correctly
+
+6. **Report completion status**
+   - Confirm file creation/modification
+   - Note any deviations from specification
+   - Flag any potential issues
+
+**Build Agent Output Format:**
+```markdown
+### Implementation Summary
+- **File Created/Modified**: [absolute path]
+- **Implementation Details**: Brief summary
+- **Key Features**: List of main components
+
+### Specification Compliance
+- **Requirements Met**: Checklist
+- **Deviations**: Any deviations with reasoning
+- **Assumptions Made**: Any assumptions
+
+### Quality Checks
+- **Verification Results**: Test/check output
+- **Type Safety**: Type checking results
+- **Linting**: Issues found and fixed
+
+### Issues & Concerns
+- **Potential Problems**: Issues that might arise
+- **Dependencies**: External dependencies needed
+- **Recommendations**: Suggestions for next steps
+```
+
+**Context Handoff Between Build Agents:**
+```markdown
+## Continuation Context
+### Completed
+- F1: [description] - DONE
+- F2: [description] - DONE
+
+### Remaining
+- F3: [description] - IN PROGRESS (50%)
+- F4: [description] - NOT STARTED
+
+### Files Modified So Far
+- /path/to/file1.ts - [what was done]
+
+### Your Task
+Continue from F3. Complete F3 and F4.
+```
+
+### Intelligent Multi-Invocation Guidance
+
+**Quality-Over-Speed Philosophy:**
+
+The pipeline prioritizes QUALITY over artificial limits:
+- Agents continue until work is COMPLETE
+- No timeout-based terminations
+- No arbitrary limits on agent invocations
+- **Invoke the same agent 10,000 times if needed for quality**
+- Chain as many agents as needed to finish the job
+
+**When to Invoke Multiple Build Agents:**
+
+| Scenario | Recommended Action |
+|----------|-------------------|
+| Single file change | 1 build agent |
+| 2-3 related files | 1-2 build agents |
+| 4+ files or complex features | Chain multiple agents |
+| Large feature set (10+ files) | Plan batches, chain many agents |
+| Work incomplete | ALWAYS continue with next agent |
+| Quality concerns | Re-invoke for refinement passes |
+
+**Handoff Best Practices:**
+
+1. **Be Explicit** - State exactly what's done and what remains
+2. **Include File Paths** - List all files modified with brief description
+3. **Preserve Context** - Pass relevant decisions and assumptions
+4. **Track Progress** - Use completion percentages when helpful
+5. **No Artificial Stops** - Continue until truly complete
+
+**Anti-Patterns to Avoid:**
+- X Stopping mid-feature due to arbitrary limits
+- X Passing vague "continue work" instructions
+- X Losing context between agent handoffs
+- X Duplicating work already completed
+- X Rushing to finish instead of quality completion
 
 ---
 
@@ -361,6 +474,78 @@ Follow the RepoProfile conventions exactly.
 Use the documented API syntax from docs-researcher.
 Create real tests with actual assertions.
 ```
+
+### Agent Prompt Templates
+
+**Standard Prompt Structure (XML Format):**
+
+```xml
+<task>
+  {Clear, specific task description}
+</task>
+
+<context>
+  <user_request>{original user request}</user_request>
+  <taskspec>{TaskSpec from stage 0}</taskspec>
+  <repoprofile>{RepoProfile from stage 1}</repoprofile>
+  <plan>{Implementation plan from stage 2}</plan>
+</context>
+
+<requirements>
+  {Specific, measurable requirements}
+</requirements>
+
+<constraints>
+  {What NOT to do, boundaries}
+</constraints>
+
+<output_format>
+  {Exactly what the agent should output}
+</output_format>
+```
+
+**Mandatory Prompt Injections:**
+
+Every prompt to build agents MUST include:
+
+1. **Anti-Laziness Rules:**
+```
+COMPLETION RULES:
+- You MUST provide COMPLETE, PRODUCTION-READY output
+- FORBIDDEN: placeholders, TODOs, truncation, partial work
+- Every function MUST have full implementation
+- Every file MUST be complete
+```
+
+2. **Persistence Rules:**
+```
+PERSISTENCE RULES:
+- Keep going until FULLY complete
+- Do not stop until deliverables are verified
+- If blocked, document and attempt alternatives
+- Do not ask questions - make informed assumptions
+```
+
+3. **Verification Rules:**
+```
+VERIFICATION RULES:
+- If unsure about ANY file - READ IT FIRST
+- Never guess. Never hallucinate. Never assume.
+- Cite file paths: [FILE: path/to/file.ts:line]
+```
+
+**Stage-Specific Prompt Focus:**
+
+| Stage | Key Focus Areas |
+|-------|-----------------|
+| task-breakdown | Clear requirements, feature decomposition, acceptance criteria |
+| code-discovery | Directories to scan, patterns to identify, tech stack |
+| plan-agent | Batching strategy, file paths, dependencies |
+| build-agent | Implementation details, code patterns, error handling |
+| debugger | Error context, stack traces, expected vs actual |
+| test-agent | Features to test, coverage requirements |
+| review-agent | Acceptance criteria, security, code quality |
+| decide-agent | Completion evidence, decision factors |
 
 ---
 
@@ -553,6 +738,111 @@ When decide-agent outputs RESTART:
 - Track attempts and display status
 - No shortcuts, no exceptions
 - Persist until each stage succeeds
+
+---
+
+## AGENT INTERNALS REFERENCE
+
+This section provides the orchestrator with detailed knowledge of how each agent works internally.
+
+### Agent Definition Location
+
+All agent definitions are stored in `.claude/agents/{agent-name}.md` with YAML frontmatter:
+
+```yaml
+---
+name: {agent-name}
+description: {when to use this agent}
+tools: {comma-separated list of available tools}
+model: opus
+color: blue
+---
+```
+
+### Agent Capabilities by Type
+
+| Agent Type | Tools Available | Primary Function |
+|------------|-----------------|------------------|
+| **prompt-optimizer** | Read, Grep, Glob, Bash | Optimize prompts before dispatch |
+| **task-breakdown** | Read, Grep, Glob, Bash | Decompose requests into TaskSpec |
+| **context-validator** | Read | Validate PipelineContext integrity |
+| **code-discovery** | Read, Grep, Glob, Bash | Analyze codebase, create RepoProfile |
+| **plan-agent** | Read, Grep, Glob, Bash | Create batched implementation plan |
+| **docs-researcher** | Read, WebSearch, WebFetch | Research library documentation |
+| **pre-flight-checker** | Read, Bash, Glob | Pre-implementation sanity checks |
+| **build-agent-1 to 55** | Write, Read, Edit, Grep, Glob, Bash, TodoWrite | Implement code changes |
+| **debugger to debugger-11** | Read, Edit, Grep, Glob, Bash | Fix errors and bugs |
+| **logical-agent** | Read, Grep, Glob | Verify code logic correctness |
+| **test-agent** | Read, Bash, Grep, Glob | Run tests, verify implementation |
+| **integration-agent** | Read, Bash, Grep | Integration testing |
+| **review-agent** | Read, Grep, Glob | Review changes against criteria |
+| **decide-agent** | Read | Make COMPLETE/RESTART decision |
+
+### How to Direct Build Agents Effectively
+
+**Always provide:**
+1. **User's original request** - What they asked for
+2. **TaskSpec** - Features with acceptance criteria
+3. **RepoProfile** - Codebase conventions and patterns
+4. **Implementation Plan** - Specific files and changes
+5. **Previous stage outputs** - Any relevant context
+
+**Build agent prompt template:**
+```markdown
+<task>Implement features F1 and F2 per the plan</task>
+
+<context>
+## User Request
+[original request]
+
+## TaskSpec
+[paste TaskSpec]
+
+## RepoProfile
+[paste relevant conventions]
+
+## Implementation Plan
+[paste relevant batch]
+</context>
+
+<requirements>
+- Follow RepoProfile conventions exactly
+- Create real tests with actual assertions
+- Complete every feature fully
+</requirements>
+```
+
+### Agent Communication Protocol
+
+**REQUEST Tag Format:**
+```markdown
+### REQUEST
+REQUEST: [target-agent] - [reason]
+Context: [additional context for target agent]
+Priority: [critical|high|normal]
+```
+
+**Examples:**
+```markdown
+REQUEST: debugger - 3 test failures in auth module
+Context: Failures in test_jwt_verify, test_token_refresh
+Priority: high
+```
+
+```markdown
+REQUEST: build-agent-2 - F3 implementation incomplete
+Context: F1 and F2 complete, need to continue with F3
+Priority: normal
+```
+
+### Quality Enforcement
+
+All agents follow these quality rules:
+- **READ before EDIT** - Never modify without reading first
+- **EDIT not WRITE** - Use Edit for existing files, Write only for new
+- **NO unnecessary files** - Prefer modifying existing files
+- **REAL tests** - Every new file needs 3+ real test functions
+- **RIGHT amount of change** - Not too much, not too little
 
 <!-- BASE RULES - DO NOT MODIFY - END -->
 
