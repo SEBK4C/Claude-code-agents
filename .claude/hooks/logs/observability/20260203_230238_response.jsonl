@@ -1,1 +1,0 @@
-{"timestamp": "20260203_230238", "event": "PostToolUse", "tool": "Glob", "session": "502bbdb5-0275-44b4-acf0-b9d8f0e610e7", "output_preview": "{\n  \"filenames\": [\n    \"/Users/dyl/Documents/claude-agents/Claude-code-agents/.claude/agents/debugger.md\"\n  ],\n  \"durationMs\": 457,\n  \"numFiles\": 1,\n  \"truncated\": false\n}"}

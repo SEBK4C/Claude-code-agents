@@ -1,3 +1,0 @@
-{"timestamp": "20260203_231617", "event": "PostToolUse", "tool": "Grep", "session": "502bbdb5-0275-44b4-acf0-b9d8f0e610e7", "output_preview": "{\n  \"mode\": \"count\",\n  \"numFiles\": 0,\n  \"filenames\": [],\n  \"content\": \"\",\n  \"numMatches\": 0\n}"}
-{"timestamp": "20260203_231617", "event": "PostToolUse", "tool": "Grep", "session": "502bbdb5-0275-44b4-acf0-b9d8f0e610e7", "output_preview": "{\n  \"mode\": \"count\",\n  \"numFiles\": 0,\n  \"filenames\": [],\n  \"content\": \"\",\n  \"numMatches\": 0\n}"}
-{"timestamp": "20260203_231617", "event": "PostToolUse", "tool": "unknown", "session": "1770153377", "output_preview": ""}
