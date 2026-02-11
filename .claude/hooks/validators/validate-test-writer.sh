@@ -1,6 +1,6 @@
 #!/bin/bash
-# Validator for context-validator agent (Stage 0.5)
-# Validates Context Validation Report format
+# Validator for test-writer (Stage 4.5)
+# Validates Test Writing Report format with Tests Created and Coverage
 #
 # SAFETY: Uses safe shell options. On any error, outputs valid JSON and exits 0.
 
@@ -12,7 +12,7 @@ trap 'echo "{\"valid\": true, \"errors\": [], \"warnings\": [\"Validator error -
 # Source shared logging library (with error handling)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)" || SCRIPT_DIR="."
 source "$SCRIPT_DIR/lib/logging.sh" 2>/dev/null || true
-AGENT_NAME="context-validator"
+AGENT_NAME="test-writer"
 
 # Read stdin (with fallback)
 INPUT=$(cat 2>/dev/null) || INPUT=""
@@ -25,24 +25,25 @@ ERRORS=()
 WARNINGS=()
 
 # Check for required sections (using 2>/dev/null to suppress errors)
-if ! echo "$OUTPUT" | grep -qi "Context.*Validation\|Validation.*Report\|## Context" 2>/dev/null; then
-    ERRORS+=("Resolve this Format error in context-validator output: Missing required section - Context Validation Report")
+if ! echo "$OUTPUT" | grep -qi "Test Writing Report\|Test.*Report\|## Test Writing\|### Test Writing" 2>/dev/null; then
+    ERRORS+=("Resolve this Format error in test-writer output: Missing required section - Test Writing Report")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Context Verified\|Context.*Status\|Context Item" 2>/dev/null; then
-    ERRORS+=("Resolve this Format error in context-validator output: Missing required section - Context Verified")
+if ! echo "$OUTPUT" | grep -qi "Tests Created\|Test.*Created\|Test Functions\|Tests Written" 2>/dev/null; then
+    ERRORS+=("Resolve this Format error in test-writer output: Missing required section - Tests Created/Test Functions")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Target Stage\|Next Stage" 2>/dev/null; then
-    WARNINGS+=("Missing section: Target Stage (recommended)")
+# Check for recommended sections
+if ! echo "$OUTPUT" | grep -qi "Coverage\|coverage" 2>/dev/null; then
+    WARNINGS+=("Missing section: Coverage analysis (recommended)")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Validation Status\|Status.*:\s*PASS\|Status.*:\s*FAIL" 2>/dev/null; then
-    WARNINGS+=("Missing section: Validation Status (recommended)")
+if ! echo "$OUTPUT" | grep -qi "Anti-Placeholder\|Placeholder\|placeholder" 2>/dev/null; then
+    WARNINGS+=("Missing section: Anti-Placeholder check (recommended)")
 fi
 
-if ! echo "$OUTPUT" | grep -qi "Next Step\|Proceed to\|REQUEST:" 2>/dev/null; then
-    WARNINGS+=("Missing section: Next Step or REQUEST (recommended)")
+if ! echo "$OUTPUT" | grep -qi "Next Step\|Recommendation\|Status" 2>/dev/null; then
+    WARNINGS+=("Missing section: Next steps/Recommendation/Status (recommended)")
 fi
 
 # Output result as JSON

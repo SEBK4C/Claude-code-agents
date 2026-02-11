@@ -7,13 +7,12 @@ This directory contains formal schema definitions for all agent outputs in the m
 | Schema | Agent | Stage | Description |
 |--------|-------|-------|-------------|
 | [taskspec-schema.md](./taskspec-schema.md) | task-breakdown | 0 | Task specification with features and acceptance criteria |
-| [intent-confirmation-schema.md](./intent-confirmation-schema.md) | intent-confirmer | 0.25 | Intent confirmation with user approval status |
-| [context-validation-schema.md](./context-validation-schema.md) | context-validator | 0.5 | Context validation report with completeness checks |
 | [repoprofile-schema.md](./repoprofile-schema.md) | code-discovery | 1 | Repository profile with tech stack and conventions |
 | [implementation-plan-schema.md](./implementation-plan-schema.md) | plan-agent | 2 | Batched implementation plan with file mappings |
 | [preflight-check-schema.md](./preflight-check-schema.md) | pre-flight-checker | 3.5 | Pre-flight check report with blockers |
 | [pipeline-context-schema.md](./pipeline-context-schema.md) | Orchestrator | Cross-stage | Aggregated context with loop-back triggers |
 | [build-report-schema.md](./build-report-schema.md) | build-agent-1 through build-agent-55 | 4 | Build report with changes and status |
+| [test-writing-report-schema.md](./test-writing-report-schema.md) | test-writer | 4.5 | Test writing report with generated test files |
 | [debug-report-schema.md](./debug-report-schema.md) | debugger through debugger-11 | 5 | Debug report with fixes and verification |
 | [logic-verification-schema.md](./logic-verification-schema.md) | logical-agent | 5.5 | Logic verification report with issues |
 | [test-report-schema.md](./test-report-schema.md) | test-agent | 6 | Test execution report with results |
@@ -57,12 +56,6 @@ Each schema file contains:
 TaskSpec (Stage 0)
     |
     v
-Intent Confirmation (Stage 0.25)
-    |
-    v
-Context Validation (Stage 0.5)
-    |
-    v
 RepoProfile (Stage 1)
     |
     v
@@ -77,6 +70,9 @@ Pre-Flight Check (Stage 3.5)
     v
 Build Report (Stage 4) <---> Debug Report (Stage 5)
     |                            ^
+    v                            |
+Test Writing Report (Stage 4.5)  |
+    |                            |
     v                            |
 Logic Verification (Stage 5.5) --+
     |

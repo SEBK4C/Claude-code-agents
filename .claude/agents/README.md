@@ -8,21 +8,11 @@ This directory contains the agent definition files for the multi-agent framework
 **Role:** Intercepts and optimizes prompts before they reach target sub-agents
 **Always required:** YES (MANDATORY - runs FIRST before any agent dispatch)
 **Re-run eligible:** YES
-**Special:** Outputs ONLY the optimized prompt, uses haiku model for fast processing
-**Model:** Haiku (for speed)
+**Special:** Outputs ONLY the optimized prompt, uses opus model for thorough processing
+**Model:** Opus 4.6
 
 ### Stage 0: task-breakdown.md
 **Role:** Analyzes user requests and creates structured TaskSpec
-**Always required:** YES
-**Re-run eligible:** YES
-
-### Stage 0.25: intent-confirmer.md
-**Role:** Validates TaskSpec intent matches user's original request
-**Always required:** YES (validates TaskSpec before proceeding)
-**Re-run eligible:** YES
-
-### Stage 0.5: context-validator.md
-**Role:** Validates PipelineContext integrity between stages
 **Always required:** YES
 **Re-run eligible:** YES
 
@@ -60,6 +50,13 @@ This directory contains the agent definition files for the multi-agent framework
 **Instances:** 55 active build agents (build-agent-1 through build-agent-55)
 **Note:** build-agent.md is a deprecated template; use numbered instances
 
+### Stage 4.5: test-writer.md
+**Role:** Writes comprehensive, real test files for newly implemented features
+**Always required:** YES (when build-agent runs)
+**Re-run eligible:** YES
+**Special:** Creates unit tests, edge case tests, and error path tests. NO mocks, NO placeholders, NO assert True. Maps tests to acceptance criteria. Targets 100% coverage.
+**Model:** Opus 4.6
+
 ### Stage 5: debugger through debugger-11
 **Role:** Diagnoses and fixes errors, test failures, and bugs
 **Always required:** NO (triggered on errors)
@@ -67,11 +64,11 @@ This directory contains the agent definition files for the multi-agent framework
 **Instances:** 11 debugger agents (debugger, debugger-2 through debugger-11)
 
 ### Stage 5.5: logical-agent.md
-**Role:** Verifies code logic correctness using deep Opus reasoning
+**Role:** Verifies code logic correctness using deep Opus 4.6 reasoning
 **Always required:** NO (triggered after build-agent, before test-agent)
 **Re-run eligible:** YES
 **Special:** Read-only verification, detects off-by-one, race conditions, null handling, edge cases
-**Model:** Opus (for deep logical reasoning)
+**Model:** Opus 4.6 (for deep logical reasoning)
 
 ### Stage 6: test-agent.md
 **Role:** Runs test suite and reports results (NEVER blocks)
@@ -144,8 +141,6 @@ To use these agents in your repository:
 These stages MUST run for EVERY request:
 - Stage -1: prompt-optimizer (ALWAYS FIRST - optimizes prompt before any dispatch)
 - Stage 0: task-breakdown (after prompt-optimizer)
-- Stage 0.25: intent-confirmer (validates TaskSpec intent)
-- Stage 0.5: context-validator (validates PipelineContext integrity)
 - Stage 1: code-discovery
 - Stage 2: plan-agent
 - Stage 3: docs-researcher (MANDATORY before any build-agent)
@@ -158,6 +153,7 @@ These stages MUST run for EVERY request:
 ### Conditional Stages
 These stages run only when needed:
 - Stage 4: build-agent-1 through build-agent-55 (when code changes needed)
+- Stage 4.5: test-writer (ALWAYS - writes tests for implemented features)
 - Stage 5: debugger through debugger-11 (when errors occur)
 - Stage 5.5: logical-agent (after build, verifies logic correctness)
 
@@ -175,13 +171,12 @@ These stages run only when needed:
 |-------|-------------|----------------|
 | prompt-optimizer | None (outputs optimized prompt only) | All agents |
 | task-breakdown | Any agent | decide-agent mid-pipeline |
-| intent-confirmer | task-breakdown (for re-clarification) | decide-agent mid-pipeline |
-| context-validator | Any agent | decide-agent mid-pipeline |
 | code-discovery | Any agent | decide-agent mid-pipeline |
 | plan-agent | Any agent | decide-agent mid-pipeline |
 | docs-researcher | Any agent | decide-agent mid-pipeline |
 | pre-flight-checker | Any agent | decide-agent mid-pipeline |
 | build-agent-1 through build-agent-55 | Any agent | decide-agent mid-pipeline |
+| test-writer | build-agent, code-discovery, debugger | decide-agent mid-pipeline |
 | debugger through debugger-11 | Any agent | decide-agent mid-pipeline |
 | logical-agent | build-agent, debugger, code-discovery, test-agent | decide-agent mid-pipeline |
 | test-agent | Any agent (MUST request debugger on failure) | decide-agent mid-pipeline |

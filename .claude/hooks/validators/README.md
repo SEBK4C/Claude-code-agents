@@ -16,13 +16,12 @@ These validators are designed to work with Claude's PostToolUse hooks. They:
 |-----------|-------|-------|-------------------|
 | `validate-prompt-optimizer.sh` | prompt-optimizer | -1 | XML structured prompt |
 | `validate-task-breakdown.sh` | task-breakdown | 0 | TaskSpec, Features, Acceptance Criteria |
-| `validate-intent-confirmer.sh` | intent-confirmer | 0.25 | Intent Confirmation, User Approval |
-| `validate-context-validator.sh` | context-validator | 0.5 | Context Validation Report, Completeness Checks |
 | `validate-code-discovery.sh` | code-discovery | 1 | RepoProfile, Directory Structure, Tech Stack |
 | `validate-plan-agent.sh` | plan-agent | 2 | Implementation Plan, Batches, File Mappings |
 | `validate-docs-researcher.sh` | docs-researcher | 3 | Documentation Report, Libraries Researched |
 | `validate-pre-flight-checker.sh` | pre-flight-checker | 3.5 | Pre-Flight Check Report, Blockers |
 | `validate-build-agent.sh` | build-agent-1 through build-agent-55 | 4 | Build Report, Files Changed, Change Ledger |
+| `validate-test-writer.sh` | test-writer | 4.5 | Test Writing Report, Tests Created, Coverage Analysis |
 | `validate-debugger.sh` | debugger through debugger-11 | 5 | Debug Report, Root Cause, Fix Applied |
 | `validate-logical-agent.sh` | logical-agent | 5.5 | Logic Verification Report, Issues Found |
 | `validate-test-agent.sh` | test-agent | 6 | Test Report, Tests Run, Results |
